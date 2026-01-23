@@ -4,6 +4,7 @@ import { hashFile, anchorHashOnChain, verifyDocumentOnChain } from '../services/
 import { DbService } from '../services/mockDbService';
 import { DocStatus } from '../types';
 import { useToast } from './ui/ToastSystem';
+import { useUser } from '../contexts/UserContext';
 
 const steps = [
   { id: DocStatus.UPLOADED, label: 'Upload & Hashing', icon: Upload },
@@ -13,6 +14,7 @@ const steps = [
 
 const DocTransferDemo: React.FC = () => {
   const { addToast } = useToast();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState<'SEND' | 'VERIFY'>('SEND');
   
   // Send State
@@ -32,6 +34,29 @@ const DocTransferDemo: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const verifyInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Logic: Perform Anchoring ---
+  // Extracted function to allow automatic calling
+  const performAnchoring = async (targetHash: string, targetFileName: string) => {
+    setStatus(DocStatus.HASHING);
+    try {
+      const userId = user?.id || 'anon-user';
+      await DbService.createAuditLog(userId, 'ANCHOR_HASH', JSON.stringify({ fileName: targetFileName }));
+      
+      const receipt = await anchorHashOnChain(targetHash);
+      
+      setTxId(receipt.txHash);
+      setAnchorTimestamp(receipt.timestamp);
+      setStatus(DocStatus.ANCHORED);
+      
+      await DbService.createAuditLog(userId, 'VERIFY_CREDENTIAL', JSON.stringify({ tx: receipt.txHash }));
+      addToast("Dokument-Hash erfolgreich auf der Blockchain verankert!", "success");
+    } catch (error) {
+      console.error("Anchoring failed", error);
+      setStatus(DocStatus.UPLOADED);
+      addToast("Fehler bei der Blockchain-Transaktion", "error");
+    }
+  };
+
   // --- Send Logic ---
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -45,6 +70,10 @@ const DocTransferDemo: React.FC = () => {
           const computedHash = await hashFile(selectedFile);
           setHash(computedHash);
           addToast("SHA-256 Hash lokal berechnet", "info");
+          
+          // AUTOMATION: Trigger anchoring immediately after hashing
+          await performAnchoring(computedHash, selectedFile.name);
+          
         } catch (err) {
           addToast("Fehler bei der Hash-Berechnung", "error");
         }
@@ -52,22 +81,10 @@ const DocTransferDemo: React.FC = () => {
     }
   };
 
-  const handleAnchor = async () => {
+  // Manual trigger (kept for fallback/retry scenarios)
+  const handleManualAnchor = async () => {
     if (!file || !hash) return;
-    setStatus(DocStatus.HASHING);
-    try {
-      await DbService.createAuditLog('current-user', 'ANCHOR_HASH', JSON.stringify({ fileName: file.name }));
-      const receipt = await anchorHashOnChain(hash);
-      setTxId(receipt.txHash);
-      setAnchorTimestamp(receipt.timestamp);
-      setStatus(DocStatus.ANCHORED);
-      await DbService.createAuditLog('current-user', 'VERIFY_CREDENTIAL', JSON.stringify({ tx: receipt.txHash }));
-      addToast("Dokument-Hash erfolgreich auf der Blockchain verankert!", "success");
-    } catch (error) {
-      console.error("Anchoring failed", error);
-      setStatus(DocStatus.UPLOADED);
-      addToast("Fehler bei der Blockchain-Transaktion", "error");
-    }
+    await performAnchoring(hash, file.name);
   };
 
   const downloadProof = () => {
@@ -285,11 +302,10 @@ const DocTransferDemo: React.FC = () => {
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-bottom-2">
                 <h3 className="text-sm font-semibold text-slate-900 mb-4">Aktion erforderlich</h3>
                 <p className="text-sm text-slate-600 mb-6">
-                    Der digitale Fingerabdruck (Hash) wurde lokal erzeugt. 
-                    Übertragen Sie diesen nun an die Blockchain zur zeitlichen Verankerung.
+                    Der digitale Fingerabdruck wird nun automatisch an die Blockchain übertragen.
                 </p>
                 <button
-                    onClick={handleAnchor}
+                    onClick={handleManualAnchor}
                     disabled={status === DocStatus.HASHING}
                     className={`w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white transition-all
                     ${status === DocStatus.HASHING ? 'bg-slate-400 cursor-wait' : 'bg-gov-blue hover:bg-blue-800 hover:shadow-md'} 

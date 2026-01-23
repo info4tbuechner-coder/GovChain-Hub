@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Menu, Shield, FileText, Activity, Home, Lock, Database, BookOpen, User as UserIcon, LogOut, ChevronDown, Smartphone, Vote } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Shield, FileText, Activity, Home, Lock, Database, BookOpen, User as UserIcon, LogOut, ChevronDown, Smartphone, Vote, PenTool, Server, Bell, Check, Info, AlertTriangle, AlertCircle, ExternalLink, Archive, Briefcase, Euro, Scale } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import { useToast } from './ui/ToastSystem';
+import { useNotifications } from '../contexts/NotificationContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,8 +13,24 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  
   const { user, logout } = useUser();
   const { addToast } = useToast();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+            setIsNotifOpen(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
       addToast("Sitzung sicher beendet", "info");
@@ -23,13 +40,28 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
   const navItems = [
     { id: 'landing', label: 'Startseite', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: Activity },
-    { id: 'instruments', label: 'Instrumente', icon: Database },
+    { id: 'registry', label: 'Register', icon: Archive },
+    { id: 'procurement', label: 'Vergabe', icon: Briefcase },
+    { id: 'budget', label: 'Haushalt', icon: Euro },
+    { id: 'compliance', label: 'Compliance', icon: Scale },
+    { id: 'signatures', label: 'E-Akte', icon: PenTool },
     { id: 'ssi', label: 'SSI Wallet', icon: Smartphone },
     { id: 'voting', label: 'Abstimmung', icon: Vote },
     { id: 'transfer', label: 'Secure Transfer', icon: Lock },
+    { id: 'network', label: 'Infrastruktur', icon: Server },
+    { id: 'instruments', label: 'Tools', icon: Database },
     { id: 'knowledge', label: 'Wissen', icon: BookOpen },
     { id: 'security', label: 'Sicherheit', icon: Shield },
   ];
+
+  const getNotifIcon = (type: string) => {
+      switch(type) {
+          case 'SUCCESS': return <Check className="w-4 h-4 text-green-500" />;
+          case 'WARNING': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+          case 'ALERT': return <AlertCircle className="w-4 h-4 text-red-500" />;
+          default: return <Info className="w-4 h-4 text-blue-500" />;
+      }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-900">
@@ -70,6 +102,82 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
             </nav>
 
             <div className="flex items-center gap-4">
+                
+                {/* Notification Bell */}
+                <div className="relative" ref={notifRef}>
+                    <button 
+                        onClick={() => setIsNotifOpen(!isNotifOpen)}
+                        className="p-2 rounded-full hover:bg-slate-100 text-slate-500 relative transition-colors"
+                    >
+                        <Bell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                        )}
+                    </button>
+
+                    {isNotifOpen && (
+                        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl shadow-xl bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden z-50">
+                            <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                <h3 className="text-sm font-bold text-slate-900">Mitteilungen</h3>
+                                {unreadCount > 0 && (
+                                    <button onClick={markAllAsRead} className="text-xs text-gov-blue hover:underline">
+                                        Alle als gelesen markieren
+                                    </button>
+                                )}
+                            </div>
+                            <div className="max-h-[400px] overflow-y-auto">
+                                {notifications.length > 0 ? (
+                                    <div className="divide-y divide-slate-100">
+                                        {notifications.map(notif => (
+                                            <div 
+                                                key={notif.id} 
+                                                className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer group ${!notif.read ? 'bg-blue-50/40' : ''}`}
+                                                onClick={() => {
+                                                    markAsRead(notif.id);
+                                                    if(notif.linkTo) {
+                                                        onNavigate(notif.linkTo);
+                                                        setIsNotifOpen(false);
+                                                    }
+                                                }}
+                                            >
+                                                <div className="flex gap-3">
+                                                    <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center 
+                                                        ${notif.type === 'SUCCESS' ? 'bg-green-100' : notif.type === 'WARNING' ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                                                        {getNotifIcon(notif.type)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-start mb-0.5">
+                                                            <p className={`text-sm font-medium ${!notif.read ? 'text-slate-900' : 'text-slate-600'}`}>
+                                                                {notif.title}
+                                                            </p>
+                                                            {!notif.read && <span className="w-1.5 h-1.5 bg-gov-blue rounded-full flex-shrink-0 mt-1.5"></span>}
+                                                        </div>
+                                                        <p className="text-xs text-slate-500 line-clamp-2">{notif.message}</p>
+                                                        <div className="flex justify-between items-center mt-2">
+                                                            <span className="text-[10px] text-slate-400">
+                                                                {new Date(notif.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                            </span>
+                                                            {notif.linkTo && (
+                                                                <span className="text-[10px] flex items-center text-gov-blue opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    Öffnen <ExternalLink className="w-3 h-3 ml-1" />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-8 text-center text-slate-400 text-sm">
+                                        Keine Benachrichtigungen
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Profile Dropdown */}
                 <div className="relative hidden md:block">
                     <button 
@@ -87,16 +195,22 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
                     </button>
 
                     {isProfileOpen && (
-                        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                             <div className="px-4 py-3 border-b border-slate-100">
                                 <p className="text-sm text-slate-900 font-medium">Angemeldet als</p>
                                 <p className="text-xs text-slate-500 truncate">{user?.department}</p>
                             </div>
                             <div className="py-1">
-                                <button className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                <button 
+                                    onClick={() => { onNavigate('profile'); setIsProfileOpen(false); }}
+                                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                >
                                     <UserIcon className="mr-3 h-4 w-4 text-slate-400" /> Profil
                                 </button>
-                                <button className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                <button 
+                                    onClick={() => { onNavigate('profile'); setIsProfileOpen(false); }}
+                                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                >
                                     <Activity className="mr-3 h-4 w-4 text-slate-400" /> Meine Aktivitäten
                                 </button>
                             </div>

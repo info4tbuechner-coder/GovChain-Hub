@@ -4,6 +4,7 @@ import { Proposal } from '../types';
 import { DbService } from '../services/mockDbService';
 import { useUser } from '../contexts/UserContext';
 import { useToast } from './ui/ToastSystem';
+import { useNotifications } from '../contexts/NotificationContext';
 
 const VotingDemo: React.FC = () => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -14,6 +15,7 @@ const VotingDemo: React.FC = () => {
   
   const { user } = useUser();
   const { addToast } = useToast();
+  const { dispatchNotification } = useNotifications();
 
   useEffect(() => {
     fetchProposals();
@@ -43,10 +45,18 @@ const VotingDemo: React.FC = () => {
         setUserVoted(prev => ({ ...prev, [selectedProposal.id]: true }));
         addToast("Stimme erfolgreich auf der Blockchain registriert", "success");
         
-        // 4. Refresh Data
+        // 4. Trigger Global Notification
+        dispatchNotification(
+            "Wahlbeteiligung bestätigt",
+            `Ihre Stimme für "${selectedProposal.title.substring(0, 30)}..." wurde sicher gezählt.`,
+            "SUCCESS",
+            "voting"
+        );
+        
+        // 5. Refresh Data
         await fetchProposals();
         
-        // 5. Update Selected View
+        // 6. Update Selected View
         const updated = proposals.find(p => p.id === selectedProposal.id);
         if(updated) setSelectedProposal(updated);
 

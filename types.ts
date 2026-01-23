@@ -1,3 +1,4 @@
+
 // ---------------------------------------------------------
 // DATABASE SCHEMA REPRESENTATION (Virtual Prisma Schema)
 // ---------------------------------------------------------
@@ -67,7 +68,7 @@ export interface Instrument {
 export interface AuditLog {
   id: string;
   userId: string; // Who performed the action
-  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE';
+  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE' | 'SIGN_DOCUMENT' | 'TRANSFER_ASSET' | 'SUBMIT_BID' | 'TRANSFER_FUNDS';
   resourceId?: string;
   metadata?: string; // JSON string of details
   timestamp: Date;
@@ -107,6 +108,136 @@ export interface Proposal {
   totalVoters: number;
 }
 
+/**
+ * Workflow Task for Digital Signatures (E-Akte)
+ */
+export interface WorkflowTask {
+  id: string;
+  title: string;
+  type: 'PROCUREMENT' | 'LEGAL' | 'HR' | 'MEMO';
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  status: 'PENDING' | 'SIGNED' | 'REJECTED';
+  requester: string;
+  createdAt: Date;
+  documentRef: string; // In real app: URL to PDF
+  signedAt?: Date;
+  signatureHash?: string;
+}
+
+// ---------------------------------------------------------
+// INFRASTRUCTURE TYPES
+// ---------------------------------------------------------
+
+export interface Block {
+  height: number;
+  hash: string;
+  timestamp: Date;
+  proposer: string; // e.g., "Validator-BMI-01"
+  txCount: number;
+  size: number; // in KB
+}
+
+export interface NetworkNode {
+  id: string;
+  name: string;
+  organization: string; // e.g. "Bundesdruckerei", "BSI"
+  status: 'ACTIVE' | 'SYNCING' | 'OFFLINE';
+  latency: number; // ms
+  peers: number;
+  version: string;
+  role: 'VALIDATOR' | 'OBSERVER';
+}
+
+// ---------------------------------------------------------
+// REGISTRY TYPES
+// ---------------------------------------------------------
+
+export interface AssetHistoryEvent {
+  id: string;
+  date: Date;
+  type: 'REGISTRATION' | 'TRANSFER' | 'INSPECTION' | 'MODIFICATION';
+  description: string;
+  actor: string; // The authority or person acting
+  txHash: string;
+}
+
+export interface RegistryAsset {
+  id: string; // Unique ID (e.g. VIN)
+  type: 'VEHICLE' | 'REAL_ESTATE';
+  title: string;
+  currentOwner: string;
+  status: 'ACTIVE' | 'LOCKED' | 'ARCHIVED';
+  specs: Record<string, string>;
+  history: AssetHistoryEvent[];
+  contractAddress: string;
+  tokenId: string;
+}
+
+// ---------------------------------------------------------
+// PROCUREMENT TYPES
+// ---------------------------------------------------------
+
+export interface TenderBid {
+  id: string;
+  timestamp: Date;
+  bidderHash: string; // Pseudonymized bidder ID
+  offerHash: string; // Hash of the PDF/Offer
+  status: 'SEALED' | 'REVEALED';
+  amount?: number; // Only visible after reveal
+}
+
+export interface Tender {
+  id: string;
+  refNumber: string;
+  title: string;
+  description: string;
+  budget: string;
+  deadline: Date;
+  status: 'OPEN' | 'REVIEW' | 'AWARDED';
+  contractAddress: string;
+  bids: TenderBid[];
+}
+
+// ---------------------------------------------------------
+// FINANCE / BUDGET TYPES
+// ---------------------------------------------------------
+
+export interface TokenTransaction {
+  id: string;
+  from: string;
+  to: string;
+  amount: number;
+  currency: 'eEUR' | 'GRANT-IT' | 'GRANT-SOCIAL';
+  timestamp: Date;
+  status: 'COMPLETED' | 'PENDING' | 'LOCKED';
+  smartRule?: string; // e.g., "4-EYES", "EXPIRATION-2025"
+  txHash: string;
+}
+
+export interface BudgetAccount {
+  id: string;
+  name: string;
+  type: 'MAIN' | 'PROJECT' | 'ESCROW';
+  balance: number;
+  currency: 'eEUR' | 'GRANT-IT' | 'GRANT-SOCIAL';
+  address: string; // Blockchain address
+  restrictions: string[]; // e.g. ["No-Cash-Out", "Vendor-Whitelist-Only"]
+}
+
+// ---------------------------------------------------------
+// COMPLIANCE TYPES (New)
+// ---------------------------------------------------------
+
+export interface ComplianceAlert {
+  id: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  category: 'INTEGRITY' | 'ACCESS' | 'SMART_CONTRACT' | 'GDPR';
+  message: string;
+  timestamp: Date;
+  relatedLogId?: string;
+  status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED';
+}
+
 // ---------------------------------------------------------
 // APP STATE TYPES
 // ---------------------------------------------------------
@@ -124,4 +255,14 @@ export interface SecurityChecklistItem {
   label: string;
   description: string;
   critical: boolean;
+}
+
+export interface UserNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ALERT';
+  timestamp: Date;
+  read: boolean;
+  linkTo?: string; // View ID to navigate to
 }
