@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Shield, FileText, Activity, Home, Lock, Database } from 'lucide-react';
+import { Menu, Shield, FileText, Activity, Home, Lock, Database, BookOpen } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,8 +12,9 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
 
   const navItems = [
     { id: 'landing', label: 'Startseite', icon: Home },
-    { id: 'dashboard', label: 'Behörden-Dashboard', icon: Activity },
+    { id: 'dashboard', label: 'Dashboard', icon: Activity },
     { id: 'instruments', label: 'Instrumente', icon: Database },
+    { id: 'knowledge', label: 'Wissen', icon: BookOpen },
     { id: 'transfer', label: 'Secure Transfer', icon: Lock },
     { id: 'security', label: 'Sicherheit', icon: Shield },
   ];
@@ -106,26 +107,28 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-white text-lg font-bold mb-4">GovChain Hub</h3>
-            <p className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-slate-400">
               Technischer Demonstrator für den Einsatz von Distributed Ledger Technologie (DLT)
               in der öffentlichen Verwaltung. Fokus auf Datensparsamkeit und Sicherheit.
             </p>
           </div>
           <div>
             <h3 className="text-white text-lg font-bold mb-4">Compliance</h3>
-            <ul className="space-y-2 text-sm">
-              <li>DSGVO-Konformität</li>
-              <li>OWASP Top 10 geprüft</li>
-              <li>Barrierefrei nach WCAG 2.1 AA</li>
-              <li>ISO 27001 Standards</li>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li className="flex items-center"><Shield className="w-3 h-3 mr-2" /> DSGVO-Konformität</li>
+              <li className="flex items-center"><Shield className="w-3 h-3 mr-2" /> OWASP Top 10 geprüft</li>
+              <li className="flex items-center"><Shield className="w-3 h-3 mr-2" /> Barrierefrei (WCAG 2.1)</li>
+              <li className="flex items-center"><Shield className="w-3 h-3 mr-2" /> ISO 27001 Standards</li>
             </ul>
           </div>
           <div>
             <h3 className="text-white text-lg font-bold mb-4">Kontakt</h3>
-            <p className="text-sm">
+            <p className="text-sm text-slate-400">
               Referat für digitale Innovation<br />
               Willy-Brandt-Straße 1<br />
-              10557 Berlin
+              10557 Berlin<br />
+              <br />
+              <a href="#" className="text-gov-accent hover:text-white transition-colors">kontakt@govchain.bund.de</a>
             </p>
           </div>
         </div>

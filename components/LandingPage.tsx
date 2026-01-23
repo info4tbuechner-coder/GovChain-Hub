@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ShieldCheck, Database, FileKey } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Database, FileKey, BookOpen } from 'lucide-react';
 
 interface LandingPageProps {
   onNavigate: (view: string) => void;
@@ -72,6 +72,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             Unveränderliche Protokollierung aller Zugriffe in einer privaten Permissioned Chain für maximale Transparenz.
           </p>
         </div>
+      </section>
+
+      {/* Knowledge Base Teaser */}
+      <section className="bg-slate-900 rounded-2xl p-8 md:p-12 shadow-lg text-white flex flex-col md:flex-row items-center justify-between">
+        <div className="mb-6 md:mb-0 md:mr-8 max-w-2xl">
+          <div className="flex items-center mb-4 text-blue-400">
+            <BookOpen className="h-6 w-6 mr-2" />
+            <span className="font-bold tracking-wider text-sm">ACADEMY</span>
+          </div>
+          <h3 className="text-2xl md:text-3xl font-bold mb-4">Wissenstransfer für die Verwaltung</h3>
+          <p className="text-slate-300 text-lg">
+            Greifen Sie auf unsere kuratierte Wissensdatenbank zu, um tiefere Einblicke in SSI, eIDAS 2.0 und Smart Contracts im öffentlichen Sektor zu erhalten.
+          </p>
+        </div>
+        <button
+          onClick={() => onNavigate('knowledge')}
+          className="flex-shrink-0 inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-slate-900 bg-white hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-white transition-colors"
+        >
+          Zur Wissensdatenbank
+        </button>
       </section>
     </div>
   );

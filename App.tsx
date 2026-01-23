@@ -5,9 +5,17 @@ import Dashboard from './components/Dashboard';
 import DocTransferDemo from './components/DocTransferDemo';
 import SecurityChecklist from './components/SecurityChecklist';
 import InstrumentsCatalog from './components/InstrumentsCatalog';
+import KnowledgeBase from './components/KnowledgeBase';
+import LoginScreen from './components/LoginScreen';
+import { ToastProvider } from './components/ui/ToastSystem';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState('landing');
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   const renderView = () => {
     switch (currentView) {
@@ -21,6 +29,8 @@ const App: React.FC = () => {
         return <SecurityChecklist />;
       case 'instruments':
         return <InstrumentsCatalog />;
+      case 'knowledge':
+        return <KnowledgeBase />;
       default:
         return <LandingPage onNavigate={setCurrentView} />;
     }
@@ -30,6 +40,14 @@ const App: React.FC = () => {
     <Layout activeView={currentView} onNavigate={setCurrentView}>
       {renderView()}
     </Layout>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 };
 

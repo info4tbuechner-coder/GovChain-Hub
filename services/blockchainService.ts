@@ -35,6 +35,27 @@ export const anchorHashOnChain = async (hash: string): Promise<BlockchainTransac
 };
 
 /**
+ * Verifies if a file matches a given blockchain transaction or hash.
+ * In a real scenario, this would fetch the tx input data from the chain.
+ */
+export const verifyDocumentOnChain = async (fileHash: string, txHash: string): Promise<{ valid: boolean; timestamp?: number; issuer?: string }> => {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Mock validation logic: 
+  // If the hash starts with '0x' it's considered valid for this demo.
+  // In reality: Check if SmartContract.mapping(fileHash) exists.
+  
+  if (fileHash && txHash.startsWith('0x')) {
+      return {
+          valid: true,
+          timestamp: Date.now() - 86400000, // Mock timestamp (yesterday)
+          issuer: 'did:web:bundesdruckerei.de'
+      };
+  }
+  return { valid: false };
+};
+
+/**
  * Generates a mock DID (Decentralized Identifier)
  */
 export const generateDid = (): string => {
