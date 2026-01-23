@@ -1,33 +1,35 @@
 import React, { useState } from 'react';
-import { Shield, Lock, ArrowRight, CreditCard, Loader2 } from 'lucide-react';
+import { Shield, Lock, ArrowRight, CreditCard, Loader2, UserCog, User } from 'lucide-react';
 import { useToast } from './ui/ToastSystem';
+import { useUser } from '../contexts/UserContext';
 
-interface LoginScreenProps {
-  onLogin: () => void;
-}
-
-const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+const LoginScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<'ID_CARD' | 'PIN'>('ID_CARD');
+  const [selectedRole, setSelectedRole] = useState<'ADMIN' | 'EDITOR' | null>(null);
   const { addToast } = useToast();
+  const { login } = useUser();
 
-  const handleSimulatedAuth = () => {
+  const handleSimulatedAuth = (role: 'ADMIN' | 'EDITOR') => {
+    if (isLoading) return;
+    setSelectedRole(role);
     setIsLoading(true);
     
     // Simulation stages of a smart card handshake
-    setTimeout(() => {
-        addToast("NFC-Verbindung zum Ausweis hergestellt...", "info");
-    }, 800);
+    const steps = [
+        { time: 800, msg: "NFC-Verbindung zum Ausweis hergestellt...", type: "info" as const },
+        { time: 2000, msg: role === 'ADMIN' ? "Admin-Zertifikat (VS-NfD) verifiziert" : "Dienstausweis BVA verifiziert", type: "info" as const },
+        { time: 3000, msg: "Authentifizierung erfolgreich", type: "success" as const }
+    ];
 
-    setTimeout(() => {
-        addToast("Zertifikat 'Bundesdruckerei GmbH' verifiziert", "info");
-    }, 2000);
-
-    setTimeout(() => {
-        addToast("Authentifizierung erfolgreich", "success");
-        setIsLoading(false);
-        onLogin();
-    }, 3500);
+    steps.forEach(({ time, msg, type }) => {
+        setTimeout(() => {
+            addToast(msg, type);
+            if (msg === "Authentifizierung erfolgreich") {
+                setIsLoading(false);
+                login(role);
+            }
+        }, time);
+    });
   };
 
   return (
@@ -62,46 +64,56 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             {isLoading ? (
                 <div className="flex flex-col items-center py-8">
                     <Loader2 className="h-12 w-12 text-gov-blue animate-spin mb-6" />
-                    <h3 className="text-lg font-semibold text-slate-900">Prüfe Identität...</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                        {selectedRole === 'ADMIN' ? 'Prüfe Admin-Berechtigung...' : 'Lese Ausweisdaten...'}
+                    </h3>
                     <p className="text-slate-500 text-sm mt-2 text-center max-w-xs">
                         Bitte entfernen Sie Ihre Karte nicht vom Lesegerät.
                         Kryptografischer Handshake läuft.
                     </p>
                     <div className="w-full bg-slate-100 rounded-full h-2 mt-8 overflow-hidden">
-                        <div className="bg-gov-blue h-full rounded-full animate-progress origin-left w-full" style={{animationDuration: '3s'}}></div>
+                        <div className="bg-gov-blue h-full rounded-full animate-progress origin-left w-full" style={{animationDuration: '2.5s'}}></div>
                     </div>
                 </div>
             ) : (
                 <div className="space-y-6">
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-start gap-3">
-                        <Info className="h-5 w-5 text-gov-blue flex-shrink-0 mt-0.5" />
+                        <Lock className="h-5 w-5 text-gov-blue flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-blue-900">
-                            Dieser Bereich ist nur für autorisiertes Personal der Bundesverwaltung zugänglich (VS-NfD).
+                            Wählen Sie eine Persona für die Demonstration:
                         </p>
                     </div>
 
                     <div className="space-y-4">
-                        <div className="group relative border-2 border-slate-200 hover:border-gov-blue rounded-xl p-4 cursor-pointer transition-all hover:bg-slate-50" onClick={handleSimulatedAuth}>
+                        {/* Admin Persona */}
+                        <div 
+                            className="group relative border-2 border-slate-200 hover:border-gov-blue rounded-xl p-4 cursor-pointer transition-all hover:bg-slate-50 hover:shadow-md" 
+                            onClick={() => handleSimulatedAuth('ADMIN')}
+                        >
                             <div className="flex items-center">
                                 <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm mr-4">
-                                    <CreditCard className="h-6 w-6 text-gov-blue" />
+                                    <UserCog className="h-6 w-6 text-purple-600" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-semibold text-slate-900">Mit AusweisApp2 anmelden</h4>
-                                    <p className="text-xs text-slate-500">Für Personalausweis & eID-Karte</p>
+                                    <h4 className="font-semibold text-slate-900">Als Administrator anmelden</h4>
+                                    <p className="text-xs text-slate-500">Ref. Leitung (Vollzugriff)</p>
                                 </div>
                                 <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-gov-blue" />
                             </div>
                         </div>
 
-                        <div className="group relative border-2 border-slate-200 hover:border-gov-blue rounded-xl p-4 cursor-pointer transition-all hover:bg-slate-50" onClick={handleSimulatedAuth}>
+                        {/* Editor Persona */}
+                        <div 
+                            className="group relative border-2 border-slate-200 hover:border-gov-blue rounded-xl p-4 cursor-pointer transition-all hover:bg-slate-50 hover:shadow-md" 
+                            onClick={() => handleSimulatedAuth('EDITOR')}
+                        >
                             <div className="flex items-center">
                                 <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm mr-4">
-                                    <Lock className="h-6 w-6 text-gov-blue" />
+                                    <User className="h-6 w-6 text-gov-blue" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-semibold text-slate-900">Dienstzertifikat (Soft-Token)</h4>
-                                    <p className="text-xs text-slate-500">Für mobile Endgeräte</p>
+                                    <h4 className="font-semibold text-slate-900">Als Sachbearbeiter anmelden</h4>
+                                    <p className="text-xs text-slate-500">BVA Standardzugriff</p>
                                 </div>
                                 <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-gov-blue" />
                             </div>
@@ -123,13 +135,5 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     </div>
   );
 };
-
-function Info(props: React.SVGProps<SVGSVGElement>) {
-    return (
-      <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )
-}
 
 export default LoginScreen;

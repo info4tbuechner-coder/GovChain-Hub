@@ -7,14 +7,17 @@ import SecurityChecklist from './components/SecurityChecklist';
 import InstrumentsCatalog from './components/InstrumentsCatalog';
 import KnowledgeBase from './components/KnowledgeBase';
 import LoginScreen from './components/LoginScreen';
+import SSIDemo from './components/SSIDemo';
+import VotingDemo from './components/VotingDemo';
 import { ToastProvider } from './components/ui/ToastSystem';
+import { UserProvider, useUser } from './contexts/UserContext';
 
 const AppContent: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated } = useUser();
   const [currentView, setCurrentView] = useState('landing');
 
   if (!isAuthenticated) {
-    return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
+    return <LoginScreen />;
   }
 
   const renderView = () => {
@@ -25,6 +28,10 @@ const AppContent: React.FC = () => {
         return <Dashboard />;
       case 'transfer':
         return <DocTransferDemo />;
+      case 'ssi':
+        return <SSIDemo />;
+      case 'voting':
+        return <VotingDemo />;
       case 'security':
         return <SecurityChecklist />;
       case 'instruments':
@@ -46,7 +53,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ToastProvider>
-      <AppContent />
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
     </ToastProvider>
   );
 };

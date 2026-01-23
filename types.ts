@@ -67,7 +67,7 @@ export interface Instrument {
 export interface AuditLog {
   id: string;
   userId: string; // Who performed the action
-  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL';
+  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE';
   resourceId?: string;
   metadata?: string; // JSON string of details
   timestamp: Date;
@@ -80,12 +80,31 @@ export interface AuditLog {
  */
 export interface VerifiableCredential {
   id: string;
+  type: 'IdentityCard' | 'DriverLicense' | 'EmployeeBadge';
+  holderName: string; // In real SSI, this is inside the encrypted VC
   holderDid: string; // Decentralized Identifier
   issuerDid: string;
   credentialHash: string; // The root hash stored on-chain
+  claims: Record<string, string>; // The actual data (e.g. "License Class: B")
   issuanceDate: Date;
   expirationDate?: Date;
   revocationStatus: boolean;
+}
+
+/**
+ * Voting Proposal (DAO style governance)
+ */
+export interface Proposal {
+  id: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  status: 'ACTIVE' | 'CLOSED' | 'PENDING';
+  votesFor: number;
+  votesAgainst: number;
+  votesAbstain: number;
+  totalVoters: number;
 }
 
 // ---------------------------------------------------------

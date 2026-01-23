@@ -106,13 +106,6 @@ const InstrumentsCatalog: React.FC = () => {
               </div>
             </div>
           ))}
-          
-          {/* Promo Card for upcoming feature */}
-          <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center text-slate-400">
-            <Vote className="h-10 w-10 mb-3 opacity-50" />
-            <h3 className="text-sm font-semibold text-slate-900">Secure Voting Module</h3>
-            <p className="text-xs mt-1">Geplant für Q3 2025</p>
-          </div>
         </div>
       )}
     </div>

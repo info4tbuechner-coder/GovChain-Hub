@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Menu, Shield, FileText, Activity, Home, Lock, Database, BookOpen } from 'lucide-react';
+import { Menu, Shield, FileText, Activity, Home, Lock, Database, BookOpen, User as UserIcon, LogOut, ChevronDown, Smartphone, Vote } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
+import { useToast } from './ui/ToastSystem';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,13 +11,23 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, logout } = useUser();
+  const { addToast } = useToast();
+
+  const handleLogout = () => {
+      addToast("Sitzung sicher beendet", "info");
+      logout();
+  };
 
   const navItems = [
     { id: 'landing', label: 'Startseite', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: Activity },
     { id: 'instruments', label: 'Instrumente', icon: Database },
-    { id: 'knowledge', label: 'Wissen', icon: BookOpen },
+    { id: 'ssi', label: 'SSI Wallet', icon: Smartphone },
+    { id: 'voting', label: 'Abstimmung', icon: Vote },
     { id: 'transfer', label: 'Secure Transfer', icon: Lock },
+    { id: 'knowledge', label: 'Wissen', icon: BookOpen },
     { id: 'security', label: 'Sicherheit', icon: Shield },
   ];
 
@@ -39,12 +51,12 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex space-x-4 lg:space-x-6">
               {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`flex items-center px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                  className={`flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150 whitespace-nowrap ${
                     activeView === item.id
                       ? 'text-gov-blue border-b-2 border-gov-blue'
                       : 'text-slate-500 hover:text-slate-900'
@@ -57,14 +69,58 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
               ))}
             </nav>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gov-blue"
-              >
-                <Menu className="h-6 w-6" />
-              </button>
+            <div className="flex items-center gap-4">
+                {/* Profile Dropdown */}
+                <div className="relative hidden md:block">
+                    <button 
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-full hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all"
+                    >
+                        <div className="text-right hidden lg:block">
+                            <p className="text-sm font-semibold text-slate-900 leading-tight">{user?.name}</p>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-wide">{user?.role}</p>
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-gov-blue text-white flex items-center justify-center font-bold text-sm">
+                            {user?.name.charAt(0)}
+                        </div>
+                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                    </button>
+
+                    {isProfileOpen && (
+                        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="px-4 py-3 border-b border-slate-100">
+                                <p className="text-sm text-slate-900 font-medium">Angemeldet als</p>
+                                <p className="text-xs text-slate-500 truncate">{user?.department}</p>
+                            </div>
+                            <div className="py-1">
+                                <button className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                    <UserIcon className="mr-3 h-4 w-4 text-slate-400" /> Profil
+                                </button>
+                                <button className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                    <Activity className="mr-3 h-4 w-4 text-slate-400" /> Meine Aktivitäten
+                                </button>
+                            </div>
+                            <div className="border-t border-slate-100 py-1">
+                                <button 
+                                    onClick={handleLogout}
+                                    className="flex w-full items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                >
+                                    <LogOut className="mr-3 h-4 w-4" /> Abmelden
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Mobile Menu Button */}
+                <div className="md:hidden">
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gov-blue"
+                >
+                    <Menu className="h-6 w-6" />
+                </button>
+                </div>
             </div>
           </div>
         </div>
@@ -92,6 +148,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
                   </div>
                 </button>
               ))}
+              <div className="border-t border-slate-200 mt-2 pt-2">
+                 <button 
+                    onClick={handleLogout}
+                    className="flex w-full items-center px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+                 >
+                     <LogOut className="h-5 w-5 mr-3" />
+                     Abmelden ({user?.name})
+                 </button>
+              </div>
             </div>
           </div>
         )}

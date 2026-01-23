@@ -3,11 +3,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { AuditLog, VerifiableCredential } from '../types';
 import { DbService } from '../services/mockDbService';
 import { RefreshCw, FileText, CheckCircle, AlertTriangle, Activity, Server, Shield } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
 
 const Dashboard: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [credentials, setCredentials] = useState<VerifiableCredential[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   const fetchData = async () => {
     setLoading(true);
@@ -43,9 +45,15 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {/* Personalized Greeting */}
+      <div className="bg-gradient-to-r from-gov-blue to-blue-800 rounded-xl p-6 text-white shadow-lg">
+          <h2 className="text-2xl font-bold">Willkommen zurück, {user?.name}</h2>
+          <p className="opacity-80 mt-1">{user?.department} • {user?.role}</p>
+      </div>
+
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-slate-900">Lagebild Digitalisierung</h2>
+           <h2 className="text-xl font-bold text-slate-900">Lagebild Digitalisierung</h2>
            <p className="text-slate-500 text-sm mt-1">Echtzeit-Übersicht der Blockchain-Infrastruktur</p>
         </div>
         <button 
