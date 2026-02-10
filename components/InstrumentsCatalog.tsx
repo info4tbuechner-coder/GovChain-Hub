@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Instrument } from '../types';
 import { DbService } from '../services/mockDbService';
@@ -52,7 +53,7 @@ const InstrumentsCatalog: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-1 sm:px-0">
       <div className="border-b border-slate-200 pb-5">
         <h2 className="text-2xl font-bold text-slate-900">Technische Instrumente</h2>
         <p className="mt-2 text-slate-600 max-w-2xl">
@@ -61,16 +62,16 @@ const InstrumentsCatalog: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2].map(i => (
-            <div key={i} className="h-48 bg-slate-100 rounded-lg animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-64 bg-slate-100 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {instruments.map((inst) => (
-            <div key={inst.id} className="group bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col">
-              <div className="p-6 flex-grow">
+            <div key={inst.id} className="group bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col">
+              <div className="p-5 sm:p-6 flex-grow">
                 <div className="flex justify-between items-start mb-4">
                   <div className="p-3 bg-blue-50 text-gov-blue rounded-lg group-hover:bg-gov-blue group-hover:text-white transition-colors">
                     {getIcon(inst.type)}
@@ -79,29 +80,29 @@ const InstrumentsCatalog: React.FC = () => {
                 </div>
                 
                 <h3 className="text-lg font-bold text-slate-900 mb-2">{inst.name}</h3>
-                <p className="text-sm text-slate-600 mb-4 line-clamp-3">
+                <p className="text-sm text-slate-600 mb-5 line-clamp-3">
                   {inst.description}
                 </p>
                 
-                <div className="bg-slate-50 rounded-md p-3 border border-slate-100">
-                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center">
-                    <Info className="w-3 h-3 mr-1" /> Tech Specs
+                <div className="bg-slate-50 rounded-lg p-3 sm:p-4 border border-slate-100">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center">
+                    <Info className="w-3 h-3 mr-1.5" /> Spezifikationen
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-y-3 gap-x-4">
                     {Object.entries(inst.technicalSpecs).map(([key, value]) => (
-                      <div key={key}>
-                        <dt className="text-xs text-slate-400 capitalize">{key}</dt>
-                        <dd className="text-xs font-mono text-slate-700 font-medium">{value}</dd>
+                      <div key={key} className="min-w-0">
+                        <dt className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate">{key}</dt>
+                        <dd className="text-xs font-mono text-slate-700 font-semibold truncate" title={value}>{value}</dd>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
               
-              <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
-                <span className="text-xs text-slate-400">ID: {inst.id}</span>
-                <button className="text-sm font-medium text-gov-blue hover:text-blue-800">
-                  Dokumentation &rarr;
+              <div className="bg-slate-50 px-5 sm:px-6 py-4 border-t border-slate-100 flex justify-between items-center mt-auto">
+                <span className="text-[10px] font-mono text-slate-400">ID: {inst.id}</span>
+                <button className="text-sm font-bold text-gov-blue hover:text-blue-800 transition-colors flex items-center">
+                  Dokumentation
                 </button>
               </div>
             </div>

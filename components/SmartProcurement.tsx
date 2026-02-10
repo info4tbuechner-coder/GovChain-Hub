@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { Briefcase, Calendar, Clock, Lock, FileText, ChevronRight, Hash, ShieldCheck, UserPlus, Info } from 'lucide-react';
+import { Briefcase, Calendar, Clock, Lock, FileText, ChevronRight, Hash, ShieldCheck, UserPlus, Info, ChevronLeft } from 'lucide-react';
 import { Tender } from '../types';
 import { DbService } from '../services/mockDbService';
 import { useToast } from './ui/ToastSystem';
@@ -29,15 +30,12 @@ const SmartProcurement: React.FC = () => {
       setIsSimulatingBid(true);
       try {
           const updated = await DbService.submitMockBid(selectedTender.id);
-          // Log as "system" since user simulates external party
           await DbService.createAuditLog('system-sim', 'SUBMIT_BID', JSON.stringify({ tenderId: updated.id }));
-          
-          // Refresh list locally
           setTenders(prev => prev.map(t => t.id === updated.id ? updated : t));
           setSelectedTender(updated);
-          addToast("Neues Angebot verschlüsselt auf der Blockchain empfangen", "info");
+          addToast("Neues Angebot verschlüsselt empfangen", "info");
       } catch (e) {
-          addToast("Fehler bei der Gebotssimulation", "error");
+          addToast("Simulation fehlgeschlagen", "error");
       } finally {
           setIsSimulatingBid(false);
       }
@@ -45,196 +43,94 @@ const SmartProcurement: React.FC = () => {
 
   const getStatusBadge = (status: Tender['status']) => {
       switch(status) {
-          case 'OPEN': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800">Laufend</span>;
-          case 'REVIEW': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Prüfung (Locked)</span>;
-          case 'AWARDED': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">Vergeben</span>;
+          case 'OPEN': return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 uppercase">Laufend</span>;
+          case 'REVIEW': return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 uppercase">Prüfung</span>;
+          case 'AWARDED': return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 uppercase">Vergeben</span>;
       }
   };
 
-  if (selectedTender) {
-      return (
-        <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-right-4">
-             <button 
-                onClick={() => setSelectedTender(null)}
-                className="mb-6 text-sm font-medium text-slate-500 hover:text-gov-blue flex items-center transition-colors"
-            >
-                <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Zurück zur Übersicht
-            </button>
-
-            <div className="grid md:grid-cols-3 gap-6">
-                {/* Main Info */}
-                <div className="md:col-span-2 space-y-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{selectedTender.refNumber}</span>
-                                <h1 className="text-2xl font-bold text-slate-900 mt-2">{selectedTender.title}</h1>
-                            </div>
-                            {getStatusBadge(selectedTender.status)}
-                        </div>
-                        
-                        <p className="text-slate-600 leading-relaxed mb-6">{selectedTender.description}</p>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm mb-6 border-t border-slate-100 pt-4">
-                            <div>
-                                <span className="block text-slate-400 text-xs uppercase mb-1">Budgetrahmen</span>
-                                <span className="font-semibold text-slate-900">{selectedTender.budget}</span>
-                            </div>
-                            <div>
-                                <span className="block text-slate-400 text-xs uppercase mb-1">Einreichungsfrist</span>
-                                <span className="font-semibold text-slate-900">{selectedTender.deadline.toLocaleDateString()}</span>
-                            </div>
-                        </div>
-
-                        {selectedTender.status === 'OPEN' && (
-                             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-start gap-3">
-                                <Info className="w-5 h-5 text-gov-blue flex-shrink-0 mt-0.5" />
-                                <div className="text-sm text-blue-800">
-                                    <p className="font-bold mb-1">Commit-Reveal Verfahren aktiv</p>
-                                    <p>
-                                        Angebote werden als verschlüsselte Hashes eingereicht. 
-                                        Der Inhalt ist bis zur Deadline (Smart Contract Lock) für niemanden sichtbar – auch nicht für die Behörde.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Bids List */}
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                             <h3 className="font-bold text-slate-800 flex items-center">
-                                 <Hash className="w-4 h-4 mr-2 text-gov-blue"/> Eingegangene Angebote ({selectedTender.bids.length})
-                             </h3>
-                             {selectedTender.status === 'OPEN' && (
-                                 <button 
-                                    onClick={handleSimulateBid}
-                                    disabled={isSimulatingBid}
-                                    className="text-xs bg-white border border-slate-300 px-3 py-1.5 rounded hover:bg-slate-50 flex items-center shadow-sm disabled:opacity-50"
-                                 >
-                                     <UserPlus className="w-3 h-3 mr-1" />
-                                     {isSimulatingBid ? 'Simuliere...' : 'Bieter simulieren'}
-                                 </button>
-                             )}
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            {selectedTender.bids.map((bid) => (
-                                <div key={bid.id} className="p-4 flex items-center gap-4 text-sm">
-                                    <div className={`p-2 rounded-full ${bid.status === 'SEALED' ? 'bg-slate-100 text-slate-400' : 'bg-green-100 text-green-600'}`}>
-                                        {bid.status === 'SEALED' ? <Lock className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between mb-1">
-                                            <span className="font-mono text-slate-500 text-xs">Bieter: {bid.bidderHash}</span>
-                                            <span className="text-slate-400 text-xs">{bid.timestamp.toLocaleString()}</span>
-                                        </div>
-                                        {bid.status === 'SEALED' ? (
-                                            <div className="text-slate-400 italic flex items-center">
-                                                <span className="w-full bg-slate-100 h-4 rounded animate-pulse block max-w-[200px]"></span>
-                                            </div>
-                                        ) : (
-                                            <div className="font-medium text-slate-900">
-                                                Angebotssumme: {bid.amount?.toLocaleString('de-DE')} €
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-[10px] font-mono text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded inline-block" title={bid.offerHash}>
-                                            Hash: {bid.offerHash.substring(0,8)}...
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {selectedTender.bids.length === 0 && (
-                                <div className="p-8 text-center text-slate-400">Noch keine Angebote eingegangen.</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sidebar Info */}
-                <div className="space-y-6">
-                    <div className="bg-slate-900 text-white p-6 rounded-xl shadow-lg">
-                        <h3 className="font-bold mb-4 flex items-center text-green-400">
-                            <ShieldCheck className="w-5 h-5 mr-2"/> Smart Contract
-                        </h3>
-                        <div className="space-y-4 text-sm">
-                            <div>
-                                <span className="block text-slate-500 text-xs uppercase">Contract Address</span>
-                                <span className="font-mono text-blue-300 break-all">{selectedTender.contractAddress}</span>
-                            </div>
-                            <div>
-                                <span className="block text-slate-500 text-xs uppercase">Lock State</span>
-                                <span className={`inline-flex items-center mt-1 px-2 py-1 rounded text-xs font-bold ${selectedTender.status === 'OPEN' ? 'bg-red-900/50 text-red-200' : 'bg-green-900/50 text-green-200'}`}>
-                                    {selectedTender.status === 'OPEN' ? 'UNLOCKED (Accepting)' : 'LOCKED (Review)'}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="block text-slate-500 text-xs uppercase">Block Height</span>
-                                <span className="font-mono">#19,284,042</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      );
-  }
-
-  // List View
   return (
-    <div className="space-y-8 animate-in fade-in">
-        <div className="border-b border-slate-200 pb-5 flex justify-between items-end">
-            <div>
-                <h2 className="text-2xl font-bold text-slate-900">Öffentliche Vergabe (e-Tendering)</h2>
-                <p className="mt-2 text-slate-600 max-w-2xl">
-                    Manipulationssichere Ausschreibungen mittels Blockchain.
-                </p>
+    <div className="flex flex-col md:flex-row gap-6 animate-in fade-in h-full min-h-[600px]">
+        {/* List View - Hidden on mobile if detail is active */}
+        <div className={`w-full md:w-1/3 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ${selectedTender ? 'hidden md:flex' : 'flex'}`}>
+            <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+                    <Briefcase className="w-5 h-5 mr-2 text-gov-blue" />
+                    Vergaben
+                </h2>
             </div>
-             <div className="hidden md:block">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-gov-blue">
-                    <Briefcase className="w-3 h-3 mr-2" />
-                    Vergabeplattform v2.0
-                </span>
+            <div className="flex-1 overflow-y-auto">
+                {loading ? (
+                    <div className="p-8 text-center text-slate-400">Lade Vergaben...</div>
+                ) : (
+                    <div className="divide-y divide-slate-100">
+                        {tenders.map(tender => (
+                            <button key={tender.id} onClick={() => setSelectedTender(tender)} className={`w-full text-left p-4 sm:p-5 transition-all active:bg-slate-100 ${selectedTender?.id === tender.id ? 'bg-blue-50 border-r-4 border-r-gov-blue' : ''}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-[10px] font-mono text-slate-400">{tender.refNumber}</span>
+                                    {getStatusBadge(tender.status)}
+                                </div>
+                                <h4 className="font-bold text-slate-900 text-sm truncate">{tender.title}</h4>
+                                <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-2"><Clock className="w-3 h-3" /> {tender.deadline.toLocaleDateString()}</p>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
 
-        {loading ? (
-             <div className="p-12 text-center text-slate-400">Lade Ausschreibungen...</div>
-        ) : (
-            <div className="grid gap-6">
-                {tenders.map(tender => (
-                    <div 
-                        key={tender.id}
-                        onClick={() => setSelectedTender(tender)}
-                        className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-gov-blue transition-all cursor-pointer group"
-                    >
-                        <div className="flex justify-between items-start mb-2">
-                             <div className="flex items-center gap-3">
-                                 <div className="p-2 bg-slate-100 rounded text-slate-500 group-hover:bg-blue-50 group-hover:text-gov-blue transition-colors">
-                                     <FileText className="w-6 h-6" />
-                                 </div>
-                                 <div>
-                                     <h3 className="text-lg font-bold text-slate-900">{tender.title}</h3>
-                                     <span className="text-xs font-mono text-slate-500">{tender.refNumber}</span>
-                                 </div>
-                             </div>
-                             {getStatusBadge(tender.status)}
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between text-sm text-slate-500 pl-11">
-                             <div className="flex gap-6">
-                                 <span className="flex items-center"><Hash className="w-4 h-4 mr-1"/> {tender.bids.length} Gebote</span>
-                                 <span className="flex items-center"><Clock className="w-4 h-4 mr-1"/> Frist: {tender.deadline.toLocaleDateString()}</span>
-                             </div>
-                             <span className="text-gov-blue font-medium flex items-center group-hover:translate-x-1 transition-transform">
-                                Details <ChevronRight className="w-4 h-4 ml-1" />
-                            </span>
+        {/* Detail View - Shown on mobile if active */}
+        <div className={`flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-col ${selectedTender ? 'flex' : 'hidden md:flex'}`}>
+            {selectedTender ? (
+                <div className="flex-1 flex flex-col overflow-hidden animate-in slide-in-from-right-4">
+                    <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-4 bg-white sticky top-0 z-10">
+                        <button onClick={() => setSelectedTender(null)} className="md:hidden p-2 -ml-2 text-slate-400 hover:text-slate-900 active-scale"><ChevronLeft className="w-6 h-6" /></button>
+                        <div className="min-w-0">
+                            <h2 className="text-base sm:text-xl font-bold text-slate-900 truncate">{selectedTender.title}</h2>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest">{selectedTender.refNumber} • Budget: {selectedTender.budget}</p>
                         </div>
                     </div>
-                ))}
-            </div>
-        )}
+                    
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8">
+                        <section>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><Info className="w-4 h-4 mr-2" /> Beschreibung</h3>
+                            <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">{selectedTender.description}</p>
+                        </section>
+
+                        <section>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center"><Hash className="w-4 h-4 mr-2" /> Angebote ({selectedTender.bids.length})</h3>
+                                {selectedTender.status === 'OPEN' && (
+                                    <button onClick={handleSimulateBid} disabled={isSimulatingBid} className="text-[10px] font-bold bg-gov-blue text-white px-3 py-1.5 rounded-lg active-scale disabled:opacity-50">Bieter simulieren</button>
+                                )}
+                            </div>
+                            <div className="space-y-3">
+                                {selectedTender.bids.map(bid => (
+                                    <div key={bid.id} className="p-4 bg-white border border-slate-100 rounded-xl shadow-sm flex items-center gap-4">
+                                        <div className="p-2 bg-slate-100 rounded-lg text-slate-400"><Lock className="w-4 h-4" /></div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between text-[10px] mb-1">
+                                                <span className="font-mono text-slate-500">ID: {bid.bidderHash}</span>
+                                                <span className="text-slate-400">{bid.timestamp.toLocaleDateString()}</span>
+                                            </div>
+                                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className="bg-slate-200 h-full w-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            ) : (
+                <div className="flex-1 flex flex-col justify-center items-center text-slate-400 p-8 text-center bg-slate-50/50">
+                    <Briefcase className="w-16 h-16 mb-4 opacity-10" />
+                    <h3 className="text-lg font-bold text-slate-500">Keine Auswahl</h3>
+                    <p className="text-xs max-w-xs mt-1">Wählen Sie eine Vergabe aus der Liste für Details.</p>
+                </div>
+            )}
+        </div>
     </div>
   );
 };

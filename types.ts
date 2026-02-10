@@ -68,7 +68,7 @@ export interface Instrument {
 export interface AuditLog {
   id: string;
   userId: string; // Who performed the action
-  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE' | 'SIGN_DOCUMENT' | 'TRANSFER_ASSET' | 'SUBMIT_BID' | 'TRANSFER_FUNDS';
+  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE' | 'SIGN_DOCUMENT' | 'TRANSFER_ASSET' | 'SUBMIT_BID' | 'TRANSFER_FUNDS' | 'AI_QUERY' | 'CRISIS_TRIGGER' | 'DATA_ACCESS_REQ' | 'DATA_ACCESS_DECISION';
   resourceId?: string;
   metadata?: string; // JSON string of details
   timestamp: Date;
@@ -146,6 +146,7 @@ export interface NetworkNode {
   peers: number;
   version: string;
   role: 'VALIDATOR' | 'OBSERVER';
+  coordinates: { x: number; y: number }; // Percentage relative to map container (0-100)
 }
 
 // ---------------------------------------------------------
@@ -217,7 +218,7 @@ export interface TokenTransaction {
 export interface BudgetAccount {
   id: string;
   name: string;
-  type: 'MAIN' | 'PROJECT' | 'ESCROW';
+  type: 'MAIN' | 'PROJECT' | 'ESCROW' | 'CRISIS';
   balance: number;
   currency: 'eEUR' | 'GRANT-IT' | 'GRANT-SOCIAL';
   address: string; // Blockchain address
@@ -225,7 +226,7 @@ export interface BudgetAccount {
 }
 
 // ---------------------------------------------------------
-// COMPLIANCE TYPES (New)
+// COMPLIANCE TYPES
 // ---------------------------------------------------------
 
 export interface ComplianceAlert {
@@ -236,6 +237,58 @@ export interface ComplianceAlert {
   timestamp: Date;
   relatedLogId?: string;
   status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED';
+}
+
+// ---------------------------------------------------------
+// AI TYPES
+// ---------------------------------------------------------
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  sources?: string[]; // References to DB IDs or Logic
+}
+
+// ---------------------------------------------------------
+// CRISIS / ORCHESTRATION TYPES
+// ---------------------------------------------------------
+
+export interface CrisisScenario {
+    id: string;
+    name: string;
+    description: string;
+    severity: 'MEDIUM' | 'HIGH' | 'EXTREME';
+    active: boolean;
+    triggers: {
+        label: string;
+        status: 'OK' | 'WARNING' | 'CRITICAL';
+        value: string;
+    }[];
+    automatedActions: {
+        id: string;
+        module: 'BUDGET' | 'PROCUREMENT' | 'REGISTRY' | 'NOTIFY';
+        description: string;
+        status: 'PENDING' | 'EXECUTED' | 'FAILED';
+        txHash?: string;
+    }[];
+}
+
+// ---------------------------------------------------------
+// DATA EXCHANGE TYPES
+// ---------------------------------------------------------
+
+export interface DataRequest {
+  id: string;
+  requesterDept: string; // e.g. "Finanzamt München"
+  targetDataset: string; // e.g. "Melderegister Berlin"
+  purpose: string; // "Steuerprüfung 2024"
+  legalBasis: string; // "§ 93 AO"
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestDate: Date;
+  decisionDate?: Date;
+  tokenHash?: string; // Access Token Hash
 }
 
 // ---------------------------------------------------------

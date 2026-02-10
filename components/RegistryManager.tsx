@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { Database, Search, Car, Building2, ChevronRight, Hash, Calendar, Shield, User, RefreshCw, ArrowRightLeft, FileCheck } from 'lucide-react';
+import { Database, Search, Car, Building2, ChevronRight, Hash, Calendar, Shield, User, RefreshCw, ArrowRightLeft, FileCheck, MapPin, ExternalLink, Activity, ChevronLeft } from 'lucide-react';
 import { RegistryAsset } from '../types';
 import { DbService } from '../services/mockDbService';
 import { useUser } from '../contexts/UserContext';
@@ -33,13 +34,10 @@ const RegistryManager: React.FC = () => {
       try {
           const updated = await DbService.transferAsset(selectedAsset.id, newOwnerInput, user.name);
           await DbService.createAuditLog(user.id, 'TRANSFER_ASSET', JSON.stringify({ assetId: updated.id, to: newOwnerInput }));
-          
           setAssets(prev => prev.map(a => a.id === updated.id ? updated : a));
           setSelectedAsset(updated);
           setNewOwnerInput('');
-          addToast(`Eigentum von ${updated.id} erfolgreich übertragen`, "success");
-      } catch (e) {
-          addToast("Fehler beim Übertrag", "error");
+          addToast(`Eigentumsübertrag erfolgreich`, "success");
       } finally {
           setIsTransferring(false);
       }
@@ -51,181 +49,167 @@ const RegistryManager: React.FC = () => {
   );
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6 animate-in fade-in">
+    <div className="flex flex-col md:flex-row gap-6 animate-in fade-in pb-10 h-full min-h-[600px]">
         
-        {/* Sidebar: Search & List */}
-        <div className="w-full md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-             <div className="p-4 border-b border-slate-100 bg-slate-50">
-                <h2 className="text-lg font-bold text-slate-800 flex items-center">
-                    <Database className="w-5 h-5 mr-2 text-gov-blue" />
-                    Bundes-Register
-                </h2>
-                <div className="mt-3 relative">
+        {/* Left: Search & Navigation - Hidden on mobile if asset is selected */}
+        <div className={`w-full md:w-1/3 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ${selectedAsset ? 'hidden md:flex' : 'flex'}`}>
+             <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+                        <Database className="w-5 h-5 mr-2 text-gov-blue" />
+                        Staats-Register
+                    </h2>
+                    <span className="text-[10px] font-bold bg-slate-200 px-2 py-0.5 rounded text-slate-500">IVBB</span>
+                </div>
+                <div className="relative">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                     <input 
                         type="text" 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="FIN, Flurstück oder Name..." 
-                        className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-gov-blue focus:border-gov-blue"
+                        placeholder="ID oder Name suchen..." 
+                        className="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-gov-blue focus:outline-none transition-all outline-none"
                     />
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
                 {loading ? (
-                    <div className="p-8 text-center text-slate-400">Lade Registerdaten...</div>
-                ) : filteredAssets.length > 0 ? (
+                    <div className="p-8 text-center text-slate-400">Lade Daten...</div>
+                ) : (
                     <div className="divide-y divide-slate-100">
                         {filteredAssets.map(asset => (
-                            <div 
-                                key={asset.id}
-                                onClick={() => setSelectedAsset(asset)}
-                                className={`p-4 cursor-pointer transition-colors hover:bg-blue-50 
-                                    ${selectedAsset?.id === asset.id ? 'bg-blue-50 border-l-4 border-l-gov-blue' : 'border-l-4 border-l-transparent'}
-                                `}
+                            <button 
+                                key={asset.id} 
+                                onClick={() => setSelectedAsset(asset)} 
+                                className={`w-full text-left p-4 sm:p-5 transition-all hover:bg-slate-50 active:bg-slate-100 touch-target ${selectedAsset?.id === asset.id ? 'bg-blue-50 border-r-4 border-r-gov-blue' : ''}`}
                             >
-                                <div className="flex justify-between items-start mb-1">
-                                    <div className="flex items-center">
-                                        {asset.type === 'VEHICLE' ? <Car className="w-4 h-4 text-slate-500 mr-2"/> : <Building2 className="w-4 h-4 text-slate-500 mr-2"/>}
-                                        <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1 rounded">{asset.id}</span>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        {asset.type === 'VEHICLE' ? <Car className="w-4 h-4 text-slate-400"/> : <Building2 className="w-4 h-4 text-slate-400"/>}
+                                        <span className="text-[10px] font-mono text-slate-500">{asset.id}</span>
                                     </div>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${asset.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {asset.status}
-                                    </span>
+                                    <span className={`h-2 w-2 rounded-full ${asset.status === 'ACTIVE' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                 </div>
-                                <h4 className={`text-sm font-medium ${selectedAsset?.id === asset.id ? 'text-gov-blue' : 'text-slate-900'}`}>
-                                    {asset.title}
-                                </h4>
-                                <p className="text-xs text-slate-500 mt-1 truncate">
-                                    {asset.currentOwner}
-                                </p>
-                            </div>
+                                <h4 className="font-bold text-slate-900 text-sm truncate">{asset.title}</h4>
+                                <p className="text-xs text-slate-500 mt-1 truncate">{asset.currentOwner}</p>
+                            </button>
                         ))}
                     </div>
-                ) : (
-                    <div className="p-8 text-center text-slate-400 text-sm">Keine Einträge gefunden.</div>
                 )}
             </div>
         </div>
 
-        {/* Detail View */}
-        <div className="w-full md:w-2/3 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
+        {/* Right: Asset Detail View - Full screen on mobile if selected */}
+        <div className={`flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-col ${selectedAsset ? 'flex' : 'hidden md:flex'}`}>
             {selectedAsset ? (
-                <div className="flex-1 overflow-y-auto">
-                    {/* Header Image/Gradient */}
-                    <div className="h-32 bg-gradient-to-r from-slate-800 to-slate-900 relative p-6">
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                        <div className="relative z-10 flex justify-between items-end h-full">
+                <div className="flex-1 flex flex-col overflow-hidden animate-in slide-in-from-right-4">
+                    {/* Header with Back Button */}
+                    <div className="p-4 sm:p-8 bg-slate-900 text-white relative">
+                        <button 
+                            onClick={() => setSelectedAsset(null)}
+                            className="md:hidden p-2 -ml-2 mb-4 text-white/60 hover:text-white touch-target flex items-center gap-1"
+                        >
+                            <ChevronLeft className="w-6 h-6" /> <span className="text-sm font-bold">Registerliste</span>
+                        </button>
+
+                        <div className="absolute top-0 right-0 p-8 opacity-5 hidden sm:block">
+                            {selectedAsset.type === 'VEHICLE' ? <Car className="w-40 h-40" /> : <Building2 className="w-40 h-40" />}
+                        </div>
+                        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                             <div>
-                                <span className="inline-flex items-center px-2 py-1 rounded bg-white/10 text-white/80 text-xs font-medium backdrop-blur-sm mb-2">
-                                    {selectedAsset.type === 'VEHICLE' ? 'Fahrzeugregister' : 'Grundbuch / Liegenschaften'}
-                                </span>
-                                <h1 className="text-2xl font-bold text-white">{selectedAsset.title}</h1>
+                                <div className="flex items-center gap-2 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-1">
+                                    <MapPin className="w-3 h-3" /> Digitaler Zwilling
+                                </div>
+                                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{selectedAsset.title}</h1>
+                                <p className="text-slate-400 mt-1 font-mono text-xs truncate">Asset-ID: {selectedAsset.id}</p>
                             </div>
-                            <div className="text-right text-white/60 text-xs font-mono">
-                                Token ID: {selectedAsset.tokenId}
+                            <div className="bg-white/10 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-white/10 text-left sm:text-right w-full sm:w-auto">
+                                <p className="text-[9px] opacity-40 uppercase font-bold mb-0.5">Blockchain Sync</p>
+                                <p className="text-[10px] font-mono font-bold text-blue-400">Verifiziert: 0x{Math.random().toString(16).substring(2, 10)}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-6 space-y-8">
-                        
-                        {/* Status & Contract Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                <h3 className="text-xs font-bold text-slate-500 uppercase mb-3 flex items-center">
-                                    <User className="w-3 h-3 mr-1"/> Aktueller Eigentümer
-                                </h3>
-                                <p className="font-medium text-slate-900">{selectedAsset.currentOwner}</p>
-                            </div>
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                <h3 className="text-xs font-bold text-slate-500 uppercase mb-3 flex items-center">
-                                    <Hash className="w-3 h-3 mr-1"/> Smart Contract
-                                </h3>
-                                <p className="font-mono text-xs text-blue-600 break-all">{selectedAsset.contractAddress}</p>
-                            </div>
-                        </div>
-
-                        {/* Specs */}
-                        <div>
-                             <h3 className="text-sm font-bold text-slate-900 mb-3">Technische Daten</h3>
-                             <div className="grid grid-cols-2 gap-4 text-sm">
-                                 {Object.entries(selectedAsset.specs).map(([k,v]) => (
-                                     <div key={k} className="flex justify-between border-b border-slate-100 pb-1">
-                                         <span className="text-slate-500">{k}</span>
-                                         <span className="font-medium text-slate-900">{v}</span>
-                                     </div>
-                                 ))}
-                             </div>
-                        </div>
-
-                        {/* Provenance / History */}
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center">
-                                <Shield className="w-4 h-4 mr-2 text-green-600"/> 
-                                Manipulationssichere Historie (Blockchain)
-                            </h3>
-                            <div className="relative border-l-2 border-slate-200 ml-3 space-y-6 pb-2">
-                                {selectedAsset.history.map((event, idx) => (
-                                    <div key={event.id} className="relative pl-6">
-                                        <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white border-2 border-slate-300"></div>
-                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                                            <div>
-                                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold mb-1
-                                                    ${event.type === 'TRANSFER' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}
-                                                `}>
-                                                    {event.type}
-                                                </span>
-                                                <p className="font-medium text-slate-900 text-sm">{event.description}</p>
-                                                <p className="text-xs text-slate-500 mt-1">Autor: {event.actor}</p>
-                                            </div>
-                                            <div className="text-right mt-1 sm:mt-0">
-                                                <div className="flex items-center text-xs text-slate-400 mb-1 sm:justify-end">
-                                                    <Calendar className="w-3 h-3 mr-1"/>
-                                                    {event.date.toLocaleDateString()}
-                                                </div>
-                                                <div className="font-mono text-[10px] text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded inline-block cursor-help" title={event.txHash}>
-                                                    Tx: {event.txHash.substring(0,8)}...
-                                                </div>
-                                            </div>
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="space-y-6 sm:space-y-8">
+                                <section>
+                                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                                        <Shield className="w-4 h-4 mr-2 text-blue-500" /> Aktueller Status
+                                    </h3>
+                                    <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-[9px] text-slate-400 uppercase font-bold mb-1">Rechtlicher Inhaber</p>
+                                            <p className="font-bold text-slate-900 text-sm">{selectedAsset.currentOwner}</p>
                                         </div>
+                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">Aktiv im Ledger</span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                </section>
 
-                        {/* Transfer Action */}
-                        <div className="border-t border-slate-100 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 mb-4">Eigentum übertragen</h3>
-                            <div className="flex gap-2">
-                                <input 
-                                    type="text" 
-                                    value={newOwnerInput}
-                                    onChange={(e) => setNewOwnerInput(e.target.value)}
-                                    placeholder="Name des neuen Eigentümers / Behörde"
-                                    className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm focus:ring-gov-blue focus:border-gov-blue"
-                                />
-                                <button 
-                                    onClick={handleTransfer}
-                                    disabled={!newOwnerInput || isTransferring}
-                                    className="bg-gov-blue text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-800 disabled:bg-slate-300 flex items-center"
-                                >
-                                    {isTransferring ? <RefreshCw className="animate-spin w-4 h-4"/> : <ArrowRightLeft className="w-4 h-4 mr-2"/>}
-                                    Übertragen
-                                </button>
+                                <section>
+                                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                                        <Activity className="w-4 h-4 mr-2 text-blue-500" /> Transaktions-Historie
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {selectedAsset.history.map((h, i) => (
+                                            <div key={i} className="flex gap-4 relative">
+                                                {i !== selectedAsset.history.length - 1 && <div className="absolute left-3 top-7 bottom-0 w-0.5 bg-slate-100"></div>}
+                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${h.type === 'REGISTRATION' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}`}>
+                                                    <FileCheck className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex-1 pb-4 min-w-0">
+                                                    <div className="flex justify-between items-start">
+                                                        <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate mr-2">{h.description}</h4>
+                                                        <span className="text-[10px] text-slate-400 font-mono whitespace-nowrap">{h.date.toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-500 mt-0.5">Akteur: {h.actor}</p>
+                                                    <div className="mt-2 flex items-center gap-2 overflow-hidden">
+                                                        <span className="text-[8px] font-mono bg-slate-50 px-1.5 py-0.5 rounded text-slate-400 border border-slate-100 truncate">{h.txHash}</span>
+                                                        <ExternalLink className="w-3 h-3 text-slate-300 flex-shrink-0" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
                             </div>
-                            <p className="text-xs text-slate-400 mt-2">
-                                <FileCheck className="w-3 h-3 inline mr-1"/>
-                                Diese Aktion wird unwiderruflich in den Smart Contract geschrieben.
-                            </p>
+
+                            <div className="space-y-6 sm:space-y-8">
+                                <section className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200">
+                                    <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-5">Eigentums-Transfer</h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-[9px] font-bold text-slate-500 uppercase mb-2 ml-1">Neuer Eigentümer (Behörden-ID)</label>
+                                            <input type="text" value={newOwnerInput} onChange={(e) => setNewOwnerInput(e.target.value)} placeholder="0x..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-gov-blue outline-none transition-all" />
+                                        </div>
+                                        <button onClick={handleTransfer} disabled={!newOwnerInput || isTransferring} className="w-full py-4 bg-gov-blue text-white rounded-xl font-bold text-xs uppercase shadow-lg shadow-blue-900/20 hover:bg-blue-800 disabled:opacity-50 transition-all flex justify-center items-center gap-2 active:scale-95">
+                                            {isTransferring ? <RefreshCw className="animate-spin w-4 h-4" /> : <ArrowRightLeft className="w-4 h-4" />}
+                                            Eigentümer ändern
+                                        </button>
+                                        <p className="text-[9px] text-center text-slate-400 leading-relaxed italic px-2">
+                                            Vorgang erzeugt einen neuen Block im Staatsregister. Unwiderruflich und manipulationssicher.
+                                        </p>
+                                    </div>
+                                </section>
+
+                                <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100">
+                                     <h4 className="text-[10px] font-bold text-blue-900 flex items-center mb-2 uppercase tracking-tight">
+                                         <Shield className="w-3.5 h-3.5 mr-2" /> Asset Tokenisierung
+                                     </h4>
+                                     <p className="text-[10px] text-blue-800/70 leading-relaxed">
+                                         Dieses Asset ist als <strong>Non-Fungible Token (NFT)</strong> im souveränen Bundesnetzwerk verankert. Die Historie ist lückenlos bis zur Erstzulassung nachvollziehbar.
+                                     </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
-                    <Database className="w-12 h-12 mb-3 text-slate-300" />
-                    <p className="font-medium">Wählen Sie ein Asset aus dem Register</p>
+                <div className="flex-1 flex flex-col justify-center items-center text-slate-300 p-12 text-center bg-slate-50/50">
+                    <Database className="w-16 h-16 mb-4 opacity-10" />
+                    <h3 className="text-lg font-bold text-slate-500">Kein Datensatz gewählt</h3>
+                    <p className="text-xs max-w-xs mt-1">Wählen Sie einen Datensatz aus dem Register, um die Blockchain-Historie zu prüfen.</p>
                 </div>
             )}
         </div>
