@@ -1,3 +1,4 @@
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ShieldAlert, RefreshCcw } from 'lucide-react';
 
@@ -15,10 +16,13 @@ interface State {
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
  */
 class ErrorBoundary extends Component<Props, State> {
-  // Use property initializer for state
-  public state: State = {
-    hasError: false
-  };
+  // Fix: Adding an explicit constructor to ensure the 'props' property is correctly initialized and recognized by TypeScript as inherited from Component
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false
+    };
+  }
 
   public static getDerivedStateFromError(error: Error): State {
     // Update state so the next render will show the fallback UI.

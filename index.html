@@ -62,9 +62,10 @@
         background-color: #f8fafc;
         color: #0f172a;
         min-height: 100vh;
+        min-height: 100dvh;
         -webkit-tap-highlight-color: transparent;
-        overscroll-behavior-y: none;
-        user-select: none; /* Prevent accidental text selection in UI */
+        overscroll-behavior: none; /* Disables pull-to-refresh */
+        user-select: none;
         -webkit-user-select: none;
       }
 
@@ -82,6 +83,7 @@
       html {
         scroll-behavior: smooth;
         height: -webkit-fill-available;
+        overscroll-behavior: none;
       }
       
       .glass-panel {
@@ -95,13 +97,18 @@
         transform: scale(0.97);
         transition: transform 0.1s ease;
       }
+
+      /* Disable long-press context menu for native app feel */
+      button, a, .touch-target {
+        -webkit-touch-callout: none;
+      }
       
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
       #root {
         height: 100vh;
-        height: -webkit-fill-available;
+        height: 100dvh;
       }
 
       /* Better mobile scrolling */

@@ -6,7 +6,6 @@ import { DbService } from '../services/mockDbService';
 import { useUser } from '../contexts/UserContext';
 
 const GovAiAssistant: React.FC = () => {
-  // Fixed typo: was userUser, now useUser
   const { user } = useUser();
   const [messages, setMessages] = useState<ChatMessage[]>([
       {
@@ -59,7 +58,7 @@ const GovAiAssistant: React.FC = () => {
   ];
 
   return (
-    <div className="h-[calc(100vh-140px)] sm:h-[calc(100vh-180px)] flex flex-col md:flex-row gap-4 sm:gap-6 animate-in fade-in pr-safe pl-safe pb-safe">
+    <div className="h-[calc(100dvh-140px)] sm:h-[calc(100vh-180px)] flex flex-col md:flex-row gap-4 sm:gap-6 animate-in fade-in pr-safe pl-safe pb-safe">
         
         {/* Mobile Horizontal Prompts / Desktop Sidebar */}
         <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto scrollbar-hide md:w-64 pb-2 md:pb-0 flex-shrink-0">

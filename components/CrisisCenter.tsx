@@ -12,6 +12,7 @@ const CrisisCenter: React.FC = () => {
   const [isActivating, setIsActivating] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const holdTimerRef = useRef<number | null>(null);
+  const lastVibrationRef = useRef<number>(0);
   
   const { user } = useUser();
   const { addToast } = useToast();
@@ -31,12 +32,20 @@ const CrisisCenter: React.FC = () => {
     
     holdTimerRef.current = window.setInterval(() => {
       setHoldProgress(prev => {
-        if (prev >= 100) {
+        const next = prev + 2.5;
+        
+        // Haptic Feedback during progress
+        if (next >= 25 && prev < 25) navigator.vibrate?.(20);
+        if (next >= 50 && prev < 50) navigator.vibrate?.(20);
+        if (next >= 75 && prev < 75) navigator.vibrate?.(30);
+        
+        if (next >= 100) {
           clearInterval(holdTimerRef.current!);
+          navigator.vibrate?.([100, 50, 100]); // Confirmation vibration
           triggerAction();
           return 100;
         }
-        return prev + 2.5;
+        return next;
       });
     }, 25);
   };
@@ -151,7 +160,7 @@ const CrisisCenter: React.FC = () => {
                                     onMouseLeave={endHold}
                                     onTouchStart={startHold}
                                     onTouchEnd={endHold}
-                                    className={`w-full py-5 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all relative overflow-hidden flex items-center justify-center gap-3
+                                    className={`w-full py-5 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all relative overflow-hidden flex items-center justify-center gap-3 touch-none select-none
                                         ${holdProgress > 0 ? 'bg-red-900/50 text-white' : 'bg-red-600 hover:bg-red-700 text-white shadow-lg'}
                                     `}
                                 >
@@ -166,7 +175,7 @@ const CrisisCenter: React.FC = () => {
                                         {holdProgress > 0 ? `HALTEN (${Math.round(holdProgress)}%)` : 'GEDRÜCKT HALTEN'}
                                     </span>
                                 </button>
-                                <p className="text-[10px] text-slate-500 mt-4 italic">Zweistufiger Bestätigungsmechanismus gegen Fehlbedienung.</p>
+                                <p className="text-[10px] text-slate-500 mt-4 italic">Zweistufiger Bestätigungsmechanismus mit haptischem Feedback.</p>
                             </div>
                         ) : (
                             <div className="w-full py-5 bg-red-950/40 border border-red-900 rounded-xl text-red-500 font-black text-sm uppercase flex items-center justify-center animate-pulse">
