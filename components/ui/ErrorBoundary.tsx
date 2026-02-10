@@ -1,5 +1,5 @@
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { ShieldAlert, RefreshCcw } from 'lucide-react';
 
 interface Props {
@@ -15,13 +15,15 @@ interface State {
  * ErrorBoundary catches JavaScript errors anywhere in their child component tree,
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
  */
-class ErrorBoundary extends Component<Props, State> {
-  // Fix: Adding an explicit constructor to ensure the 'props' property is correctly initialized and recognized by TypeScript as inherited from Component
+// Explicitly use React.Component to ensure state and props inheritance is correctly resolved by the TypeScript compiler.
+class ErrorBoundary extends React.Component<Props, State> {
+  // Initialize state directly as a class property to ensure it's correctly recognized by the instance.
+  public state: State = {
+    hasError: false
+  };
+
   constructor(props: Props) {
     super(props);
-    this.state = {
-      hasError: false
-    };
   }
 
   public static getDerivedStateFromError(error: Error): State {
@@ -35,7 +37,11 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public render(): ReactNode {
-    if (this.state.hasError) {
+    // Access state and props from the inherited React.Component members.
+    const { hasError, error } = this.state;
+    const { children } = this.props;
+
+    if (hasError) {
       // Fallback UI when an error is caught
       return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans pb-safe">
@@ -48,7 +54,7 @@ class ErrorBoundary extends Component<Props, State> {
               Ein unerwarteter Fehler ist aufgetreten. Die Sitzung wurde aus Sicherheitsgründen isoliert.
             </p>
             <div className="bg-slate-50 rounded-lg p-4 mb-8 text-left font-mono text-xs text-red-500 overflow-auto max-h-32 scrollbar-hide">
-              {this.state.error?.message || "Unbekannter Fehler"}
+              {error?.message || "Unbekannter Fehler"}
             </div>
             <div className="flex flex-col gap-3">
               <button 
@@ -69,8 +75,8 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // Default: render children by accessing the props property correctly
-    return this.props.children;
+    // Return children from props
+    return children;
   }
 }
 

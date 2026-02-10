@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Block, NetworkNode } from '../types';
 import { DbService } from '../services/mockDbService';
-// Added X to the list of icons imported from lucide-react to fix 'Cannot find name' error
-import { Server, Activity, Globe, Cpu, Box, Clock, Layers, Zap, Wifi, X } from 'lucide-react';
+import { Server, Activity, Globe, Cpu, Box, Clock, Layers, Zap, Wifi, X, ChevronRight } from 'lucide-react';
 
 const BlockchainMonitor: React.FC = () => {
   const [nodes, setNodes] = useState<NetworkNode[]>([]);
@@ -44,19 +43,18 @@ const BlockchainMonitor: React.FC = () => {
             <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1">Peers</p>
             <p className="text-xl sm:text-2xl font-mono font-bold text-purple-400">{nodes.length + 12}</p>
         </div>
-        <div className="bg-slate-900 rounded-2xl p-4 text-white shadow-lg border border-slate-700 relative overflow-hidden hidden sm:block">
+        <div className="bg-slate-900 rounded-2xl p-4 text-white shadow-lg border border-slate-700 relative overflow-hidden">
             <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1">Throughput</p>
-            <p className="text-2xl font-mono font-bold text-green-400">1,420 TPS</p>
+            <p className="text-xl sm:text-2xl font-mono font-bold text-green-400">1,420 <span className="text-[10px] font-sans">TPS</span></p>
         </div>
-        <div className="bg-slate-900 rounded-2xl p-4 text-white shadow-lg border border-slate-700 relative overflow-hidden hidden sm:block">
+        <div className="bg-slate-900 rounded-2xl p-4 text-white shadow-lg border border-slate-700 relative overflow-hidden">
             <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1">Block Time</p>
-            <p className="text-2xl font-mono font-bold text-amber-400">12.0s</p>
+            <p className="text-xl sm:text-2xl font-mono font-bold text-amber-400">12.0s</p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           
-          {/* Live Block Feed - Responsive Wrapper */}
           <div className="lg:col-span-3 space-y-4">
                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                   <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center">
@@ -65,58 +63,76 @@ const BlockchainMonitor: React.FC = () => {
                   </h3>
               </div>
 
-              <div className="relative group">
-                  {/* Visual Indicator for scroll */}
-                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 sm:hidden opacity-50 group-hover:opacity-0 transition-opacity"></div>
-                  
-                  <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto scrollbar-hide">
-                      <table className="min-w-full text-left text-sm whitespace-nowrap">
-                          <thead className="bg-slate-50 text-slate-400 font-bold text-[10px] uppercase tracking-widest border-b border-slate-100">
-                              <tr>
-                                  <th className="px-6 py-4">Height</th>
-                                  <th className="px-6 py-4">Validator</th>
-                                  <th className="px-6 py-4">TXs</th>
-                                  <th className="px-6 py-4">Timestamp</th>
-                              </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                              {blocks.map((block, index) => (
-                                  <tr key={block.hash} className={`hover:bg-blue-50 transition-colors ${index === 0 ? 'bg-blue-50/20' : ''}`}>
-                                      <td className="px-6 py-4 font-mono font-bold text-gov-blue">
-                                          #{block.height}
-                                      </td>
-                                      <td className="px-6 py-4">
-                                          <div className="flex items-center">
-                                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] mr-2 text-slate-500 font-bold border border-slate-200">
-                                                  {block.proposer.charAt(0)}
-                                              </div>
-                                              <span className="text-slate-600 font-medium">{block.proposer}</span>
+              {/* Desktop Table */}
+              <div className="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                  <table className="min-w-full text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-400 font-bold text-[10px] uppercase tracking-widest border-b border-slate-100">
+                          <tr>
+                              <th className="px-6 py-4">Height</th>
+                              <th className="px-6 py-4">Validator</th>
+                              <th className="px-6 py-4">TXs</th>
+                              <th className="px-6 py-4">Timestamp</th>
+                          </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                          {blocks.map((block, index) => (
+                              <tr key={block.hash} className={`hover:bg-blue-50 transition-colors ${index === 0 ? 'bg-blue-50/20' : ''}`}>
+                                  <td className="px-6 py-4 font-mono font-bold text-gov-blue">
+                                      #{block.height}
+                                  </td>
+                                  <td className="px-6 py-4">
+                                      <div className="flex items-center">
+                                          <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] mr-2 text-slate-500 font-bold border border-slate-200">
+                                              {block.proposer.charAt(0)}
                                           </div>
-                                      </td>
-                                      <td className="px-6 py-4">
-                                          <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-                                              {block.txCount}
-                                          </span>
-                                      </td>
-                                      <td className="px-6 py-4 text-slate-400 text-[10px]">
-                                          {block.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})}
-                                      </td>
-                                  </tr>
-                              ))}
-                          </tbody>
-                      </table>
-                  </div>
+                                          <span className="text-slate-600 font-medium">{block.proposer}</span>
+                                      </div>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                      <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">
+                                          {block.txCount}
+                                      </span>
+                                  </td>
+                                  <td className="px-6 py-4 text-slate-400 text-[10px]">
+                                      {block.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})}
+                                  </td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </table>
+              </div>
+
+              {/* Mobile Card List */}
+              <div className="sm:hidden space-y-3">
+                  {blocks.map((block, index) => (
+                      <div key={block.hash} className={`bg-white rounded-xl border p-4 shadow-sm transition-all ${index === 0 ? 'border-blue-300 ring-1 ring-blue-100' : 'border-slate-200'}`}>
+                          <div className="flex justify-between items-start mb-2">
+                              <div>
+                                  <span className="text-[10px] font-bold text-blue-600 font-mono uppercase tracking-wider block mb-1">Block #{block.height}</span>
+                                  <div className="flex items-center">
+                                      <div className="w-4 h-4 rounded-full bg-slate-900 text-[8px] flex items-center justify-center text-white mr-2">
+                                          {block.proposer.charAt(0)}
+                                      </div>
+                                      <span className="text-xs font-bold text-slate-900">{block.proposer}</span>
+                                  </div>
+                              </div>
+                              <div className="text-right">
+                                  <span className="text-[10px] text-slate-400 font-mono block">{block.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+                                  <span className="text-[10px] font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 mt-1 inline-block">{block.txCount} TXs</span>
+                              </div>
+                          </div>
+                      </div>
+                  ))}
               </div>
           </div>
 
-          {/* Infrastructure Map - Smaller/Full width on mobile */}
+          {/* Node Map */}
           <div className="lg:col-span-1 space-y-4">
                <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center">
                   <Globe className="w-5 h-5 mr-2 text-gov-blue" />
                   Validator Nodes
               </h3>
               <div className="bg-slate-950 rounded-2xl shadow-xl border border-slate-800 aspect-square sm:aspect-auto sm:h-[400px] relative overflow-hidden touch-none">
-                  {/* Grid Background */}
                   <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
 
                   {nodes.map(node => (

@@ -49,9 +49,9 @@ const RegistryManager: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 animate-in fade-in pb-10 h-full min-h-[600px]">
+    <div className="flex flex-col md:flex-row gap-6 animate-in fade-in pb-10 h-full min-h-[600px] pl-safe pr-safe">
         
-        {/* Left: Search & Navigation - Hidden on mobile if asset is selected */}
+        {/* Left: Search & Navigation - Stacked on Mobile */}
         <div className={`w-full md:w-1/3 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ${selectedAsset ? 'hidden md:flex' : 'flex'}`}>
              <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50">
                 <div className="flex items-center justify-between mb-4">
@@ -68,12 +68,12 @@ const RegistryManager: React.FC = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="ID oder Name suchen..." 
-                        className="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-gov-blue focus:outline-none transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-gov-blue focus:outline-none transition-all outline-none bg-white"
                     />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
                 {loading ? (
                     <div className="p-8 text-center text-slate-400">Lade Daten...</div>
                 ) : (
@@ -100,15 +100,15 @@ const RegistryManager: React.FC = () => {
             </div>
         </div>
 
-        {/* Right: Asset Detail View - Full screen on mobile if selected */}
+        {/* Right: Asset Detail View - High Fidelity Mobile View */}
         <div className={`flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-col ${selectedAsset ? 'flex' : 'hidden md:flex'}`}>
             {selectedAsset ? (
-                <div className="flex-1 flex flex-col overflow-hidden animate-in slide-in-from-right-4">
+                <div className="flex-1 flex flex-col overflow-hidden animate-in slide-in-from-right-4 duration-300">
                     {/* Header with Back Button */}
                     <div className="p-4 sm:p-8 bg-slate-900 text-white relative">
                         <button 
                             onClick={() => setSelectedAsset(null)}
-                            className="md:hidden p-2 -ml-2 mb-4 text-white/60 hover:text-white touch-target flex items-center gap-1"
+                            className="md:hidden p-3 -ml-2 mb-2 text-white/60 hover:text-white touch-target flex items-center gap-1 active:scale-95"
                         >
                             <ChevronLeft className="w-6 h-6" /> <span className="text-sm font-bold">Registerliste</span>
                         </button>
@@ -121,7 +121,7 @@ const RegistryManager: React.FC = () => {
                                 <div className="flex items-center gap-2 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-1">
                                     <MapPin className="w-3 h-3" /> Digitaler Zwilling
                                 </div>
-                                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{selectedAsset.title}</h1>
+                                <h1 className="text-xl sm:text-3xl font-bold tracking-tight">{selectedAsset.title}</h1>
                                 <p className="text-slate-400 mt-1 font-mono text-xs truncate">Asset-ID: {selectedAsset.id}</p>
                             </div>
                             <div className="bg-white/10 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-white/10 text-left sm:text-right w-full sm:w-auto">
@@ -131,7 +131,7 @@ const RegistryManager: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-8 scrollbar-hide">
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-6 sm:space-y-8">
                                 <section>
@@ -139,11 +139,11 @@ const RegistryManager: React.FC = () => {
                                         <Shield className="w-4 h-4 mr-2 text-blue-500" /> Aktueller Status
                                     </h3>
                                     <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                                        <div>
+                                        <div className="min-w-0 flex-1">
                                             <p className="text-[9px] text-slate-400 uppercase font-bold mb-1">Rechtlicher Inhaber</p>
-                                            <p className="font-bold text-slate-900 text-sm">{selectedAsset.currentOwner}</p>
+                                            <p className="font-bold text-slate-900 text-sm truncate">{selectedAsset.currentOwner}</p>
                                         </div>
-                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">Aktiv im Ledger</span>
+                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100 flex-shrink-0">Aktiv im Ledger</span>
                                     </div>
                                 </section>
 

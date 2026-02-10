@@ -64,7 +64,7 @@
         min-height: 100vh;
         min-height: 100dvh;
         -webkit-tap-highlight-color: transparent;
-        overscroll-behavior: none; /* Disables pull-to-refresh */
+        overscroll-behavior: none; 
         user-select: none;
         -webkit-user-select: none;
       }
@@ -98,7 +98,6 @@
         transition: transform 0.1s ease;
       }
 
-      /* Disable long-press context menu for native app feel */
       button, a, .touch-target {
         -webkit-touch-callout: none;
       }
@@ -111,9 +110,14 @@
         height: 100dvh;
       }
 
-      /* Better mobile scrolling */
       .scroll-container {
         -webkit-overflow-scrolling: touch;
+      }
+
+      /* Focus Ring for accessibility */
+      :focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
       }
     </style>
   <script type="importmap">
@@ -123,7 +127,8 @@
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "recharts": "https://esm.sh/recharts@^3.7.0"
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
   }
 }
 </script>

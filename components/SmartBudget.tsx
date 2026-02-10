@@ -80,7 +80,6 @@ const SmartBudget: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-12 pr-safe pl-safe">
         
-        {/* Metric Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-blue-600">Liquidität Gesamt</p>
@@ -105,18 +104,17 @@ const SmartBudget: React.FC = () => {
 
         <div className="grid lg:grid-cols-4 gap-6">
             
-            {/* Account Grid */}
             <div className="lg:col-span-3 grid md:grid-cols-2 gap-4 auto-rows-max">
                 {budgets.map(acc => (
                     <div 
                         key={acc.id}
                         onClick={() => setSelectedAccount(acc)}
                         className={`p-6 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden group active-scale
-                            ${selectedAccount?.id === acc.id ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white hover:border-blue-200'}
+                            ${selectedAccount?.id === acc.id ? 'border-blue-600 bg-blue-50/50 shadow-inner' : 'border-slate-100 bg-white hover:border-blue-200'}
                         `}
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <div className={`p-2 rounded-xl ${acc.type === 'MAIN' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                            <div className={`p-2 rounded-xl ${acc.type === 'MAIN' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}>
                                 <Euro className="w-5 h-5"/>
                             </div>
                             <div className="text-right">
@@ -140,7 +138,6 @@ const SmartBudget: React.FC = () => {
                     </div>
                 ))}
 
-                {/* Recent Transactions List */}
                 <div className="md:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                     <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center">
@@ -150,7 +147,7 @@ const SmartBudget: React.FC = () => {
                     <div className="divide-y divide-slate-100">
                         {transactions.slice(0, 5).map(tx => (
                             <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors touch-target">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
                                     <div className={`p-2 rounded-full ${tx.from.includes('Haushalt') ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
                                         <ArrowRight className={`w-3.5 h-3.5 ${tx.from.includes('Haushalt') ? '-rotate-45' : 'rotate-45'}`}/>
                                     </div>
@@ -171,11 +168,10 @@ const SmartBudget: React.FC = () => {
                 </div>
             </div>
 
-            {/* Sidebar: Control Panel */}
             <div className="lg:col-span-1 space-y-6">
                 <div className="bg-slate-900 rounded-2xl shadow-2xl p-6 text-white sticky top-24 border border-slate-800">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="bg-blue-600 p-2 rounded-xl">
+                        <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-500/20">
                             <Send className="w-5 h-5" />
                         </div>
                         <h3 className="font-bold">Mittelabfluss</h3>
@@ -200,7 +196,7 @@ const SmartBudget: React.FC = () => {
                                     value={recipient}
                                     onChange={(e) => setRecipient(e.target.value)}
                                     placeholder="did:ethr:0x..."
-                                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all outline-none"
                                 />
                             </div>
 
@@ -209,17 +205,18 @@ const SmartBudget: React.FC = () => {
                                 <input 
                                     type="text" 
                                     inputMode="decimal"
+                                    pattern="[0-9]*"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
                                     placeholder="0,00"
-                                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
+                                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono outline-none"
                                 />
                             </div>
 
                             <button 
                                 onClick={handleTransfer}
                                 disabled={isProcessing || !amount || !recipient}
-                                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm shadow-lg active-scale transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm shadow-lg active-scale transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 pb-safe"
                             >
                                 {isProcessing ? <Activity className="w-4 h-4 animate-spin"/> : <Zap className="w-4 h-4"/>}
                                 {isProcessing ? 'Verarbeite...' : 'Transaktion Signieren'}

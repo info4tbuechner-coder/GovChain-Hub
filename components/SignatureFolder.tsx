@@ -35,15 +35,29 @@ const SignatureFolder: React.FC = () => {
   };
 
   const handlePinChange = (index: number, value: string) => {
-    if (value.length > 1) value = value[0];
-    if (!/^\d*$/.test(value)) return;
+    // Check if user pasted a full code or multiple digits
+    if (value.length > 1) {
+        const digits = value.replace(/\D/g, '').split('').slice(0, 6);
+        const newPin = [...pin];
+        digits.forEach((d, i) => {
+            if (i < 6) newPin[i] = d;
+        });
+        setPin(newPin);
+        
+        // Focus the last filled field or the next empty one
+        const nextIdx = Math.min(digits.length, 5);
+        pinRefs[nextIdx].current?.focus();
+        return;
+    }
+
+    const char = value.slice(-1);
+    if (!/^\d*$/.test(char)) return;
 
     const newPin = [...pin];
-    newPin[index] = value;
+    newPin[index] = char;
     setPin(newPin);
 
-    // Auto-focus next
-    if (value !== '' && index < 5) {
+    if (char !== '' && index < 5) {
       pinRefs[index + 1].current?.focus();
     }
   };
@@ -93,7 +107,6 @@ const SignatureFolder: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row gap-6 min-h-[600px] h-full pb-safe">
       
-      {/* Sidebar / List View */}
       <div className={`w-full md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${selectedTask ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-slate-100 bg-slate-50">
             <h2 className="text-lg font-bold text-slate-800 flex items-center">
@@ -110,7 +123,7 @@ const SignatureFolder: React.FC = () => {
             </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto scroll-container">
+        <div className="flex-1 overflow-y-auto scroll-container scrollbar-hide">
             {loading ? (
                 <div className="p-8 text-center text-slate-400 text-sm">Lade Vorgänge...</div>
             ) : (
@@ -147,14 +160,13 @@ const SignatureFolder: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className={`w-full md:w-2/3 flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative ${selectedTask ? 'flex' : 'hidden md:flex'}`}>
           {selectedTask ? (
               <>
                 <div className="p-4 sm:p-6 border-b border-slate-200 flex items-center bg-white sticky top-0 z-10">
                     <button 
                         onClick={() => setSelectedTask(null)}
-                        className="md:hidden p-2 mr-3 -ml-2 text-slate-400 hover:text-slate-900 touch-target"
+                        className="md:hidden p-2 mr-3 -ml-2 text-slate-400 hover:text-slate-900 touch-target active-scale"
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </button>
@@ -189,11 +201,11 @@ const SignatureFolder: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="p-4 bg-white border-t border-slate-200 flex flex-col gap-4 sticky bottom-0">
+                <div className="p-4 bg-white border-t border-slate-200 flex flex-col gap-4 sticky bottom-0 z-20">
                     {selectedTask.status === 'PENDING' ? (
                         <div className="space-y-4">
                             <div className="flex flex-col items-center gap-2">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase">eID 6-Stelliger PIN-Code</span>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">eID 6-Stelliger PIN-Code</span>
                                 <div className="flex gap-2">
                                     {pin.map((digit, i) => (
                                         <input 
@@ -202,22 +214,23 @@ const SignatureFolder: React.FC = () => {
                                             type="text"
                                             inputMode="numeric"
                                             pattern="[0-9]*"
+                                            autoComplete="one-time-code"
                                             value={digit}
                                             onChange={(e) => handlePinChange(i, e.target.value)}
                                             onKeyDown={(e) => handleKeyDown(i, e)}
-                                            className="w-10 h-12 text-center text-xl font-bold bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-gov-blue outline-none transition-all"
+                                            className="w-10 h-12 text-center text-xl font-bold bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-gov-blue outline-none transition-all shadow-sm"
                                         />
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex gap-2 w-full">
+                            <div className="flex gap-2 w-full pb-safe">
                                 <button className="flex-1 px-4 py-3 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl text-sm font-semibold transition-colors active-scale">
                                     Ablehnen
                                 </button>
                                 <button 
                                     onClick={handleSign}
                                     disabled={isSigning}
-                                    className="flex-[2] px-6 py-3 bg-gov-blue text-white rounded-xl shadow-lg hover:bg-blue-800 text-sm font-bold flex items-center justify-center transition-all disabled:opacity-70 active-scale"
+                                    className="flex-[2] px-6 py-4 bg-gov-blue text-white rounded-xl shadow-lg hover:bg-blue-800 text-sm font-bold flex items-center justify-center transition-all disabled:opacity-70 active-scale"
                                 >
                                     {isSigning ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <PenTool className="w-4 h-4 mr-2" />}
                                     {isSigning ? 'Signiere...' : 'QES Signatur ausführen'}
@@ -225,7 +238,7 @@ const SignatureFolder: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                         <div className="text-sm text-green-600 font-bold flex items-center w-full justify-center py-2">
+                         <div className="text-sm text-green-600 font-bold flex items-center w-full justify-center py-4 pb-safe">
                              <CheckCircle className="w-5 h-5 mr-2" />
                              Vorgang abgeschlossen ({selectedTask.signedAt?.toLocaleDateString()})
                          </div>
@@ -238,6 +251,7 @@ const SignatureFolder: React.FC = () => {
                       <Briefcase className="w-8 h-8 text-slate-200" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-600">Kein Vorgang ausgewählt</h3>
+                  <p className="text-sm mt-1">Bitte wählen Sie einen Vorgang aus der Liste links.</p>
               </div>
           )}
       </div>

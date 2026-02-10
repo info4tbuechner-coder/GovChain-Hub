@@ -4,6 +4,8 @@ import { Bot, Send, User, Sparkles, FileText, BarChart3, ShieldCheck, Database, 
 import { ChatMessage } from '../types';
 import { DbService } from '../services/mockDbService';
 import { useUser } from '../contexts/UserContext';
+// Fix: Added proper GoogleGenAI import from the SDK.
+import { GoogleGenAI } from "@google/genai";
 
 const GovAiAssistant: React.FC = () => {
   const { user } = useUser();
@@ -25,6 +27,7 @@ const GovAiAssistant: React.FC = () => {
       }
   }, [messages]);
 
+  // Fix: Implemented handleSend with actual Google Gemini API integration.
   const handleSend = async (text: string = inputValue) => {
       if (!text.trim()) return;
       
@@ -40,11 +43,45 @@ const GovAiAssistant: React.FC = () => {
       setIsProcessing(true);
 
       try {
-          const response = await DbService.sendAiPrompt(text);
-          setMessages(prev => [...prev, response]);
-          await DbService.createAuditLog(user?.id || 'anon', 'AI_QUERY', JSON.stringify({ responseSource: response.sources?.[0] || 'general' }));
+          // Fix: Always use named parameter for apiKey and select gemini-3-pro-preview for complex reasoning.
+          const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+          
+          const response = await ai.models.generateContent({
+              model: 'gemini-3-pro-preview',
+              contents: text,
+              config: {
+                  systemInstruction: `Du bist GovAI, ein souveräner KI-Assistent für die deutsche Bundesverwaltung. 
+                  Antworte stets förmlich, professionell und präzise auf Deutsch. 
+                  Du hast privilegierten Zugriff auf Blockchain-Audit-Logs, Haushaltsdaten (eEUR) und digitale Staatsregister.
+                  Der aktuelle Benutzer ist ${user?.name} aus dem Bereich ${user?.department}.
+                  Unterstütze bei Datenanalysen, Compliance-Prüfungen und dem Entwurf behördlicher Dokumente.`,
+              },
+          });
+
+          // Fix: Accessing generated text directly via .text property.
+          const assistantContent = response.text || "Entschuldigung, ich konnte keine Antwort generieren.";
+
+          const aiMsg: ChatMessage = {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: assistantContent,
+              timestamp: new Date(),
+              sources: ['SECURE_GOV_LEDGER', 'AUTH_REGISTRY_V1']
+          };
+          
+          setMessages(prev => [...prev, aiMsg]);
+          
+          // Log AI query to audit ledger for transparency.
+          await DbService.createAuditLog(user?.id || 'anon', 'AI_QUERY', JSON.stringify({ query: text.substring(0, 30) + '...' }));
       } catch (e) {
-          console.error(e);
+          console.error("Gemini AI API Error:", e);
+          const errorMsg: ChatMessage = {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: "Ein Fehler ist bei der Verarbeitung Ihrer Anfrage in der souveränen Cloud aufgetreten. Bitte prüfen Sie die Netzwerkkonfiguration.",
+              timestamp: new Date()
+          };
+          setMessages(prev => [...prev, errorMsg]);
       } finally {
           setIsProcessing(false);
       }
