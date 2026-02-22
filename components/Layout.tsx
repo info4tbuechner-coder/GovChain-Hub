@@ -5,6 +5,7 @@ import { useUser } from '../contexts/UserContext';
 import { useToast } from './ui/ToastSystem';
 import { useNotifications } from '../contexts/NotificationContext';
 import CommandPalette from './CommandPalette';
+import InstallPrompt from './InstallPrompt';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -123,6 +124,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
               </button>
           ))}
       </nav>
+
+      <InstallPrompt />
 
       {/* Sidebar Overlay (Mobile Full Menu) */}
       {isMobileMenuOpen && (
