@@ -6,6 +6,7 @@ import { useToast } from './ui/ToastSystem';
 import { useNotifications } from '../contexts/NotificationContext';
 import CommandPalette from './CommandPalette';
 import InstallPrompt from './InstallPrompt';
+import OfflineIndicator from './OfflineIndicator';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -55,6 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
       <CommandPalette isOpen={isCmdOpen} onClose={() => setIsCmdOpen(false)} onNavigate={onNavigate} />
 
       <header className="sticky top-0 z-40 w-full">
+        <OfflineIndicator />
         <div className="hidden sm:flex bg-slate-950 text-slate-300 text-[10px] py-1 px-4 justify-between items-center border-b border-slate-800">
           <div className="flex items-center gap-4">
               <span className="flex items-center opacity-80 font-medium tracking-wide"><Shield className="w-3 h-3 mr-1.5"/> OFFIZIELLER BUNDES-DEMONSTRATOR</span>
