@@ -54,8 +54,8 @@ button, a, .touch-target {
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
 #root {
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .scroll-container {

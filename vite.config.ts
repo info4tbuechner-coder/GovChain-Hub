@@ -14,7 +14,6 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
           manifest: {
             name: 'GovChain Hub',
             short_name: 'GovChain',
@@ -69,16 +68,16 @@ export default defineConfig(({ mode }) => {
             ],
             icons: [
               {
-                src: 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/shield.svg',
+                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Bundesadler_Bundesrepublik_Deutschland_%281997%29.svg/192px-Bundesadler_Bundesrepublik_Deutschland_%281997%29.svg.png',
                 sizes: '192x192',
-                type: 'image/svg+xml',
-                purpose: 'any'
+                type: 'image/png',
+                purpose: 'any maskable'
               },
               {
-                src: 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/shield.svg',
+                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Bundesadler_Bundesrepublik_Deutschland_%281997%29.svg/512px-Bundesadler_Bundesrepublik_Deutschland_%281997%29.svg.png',
                 sizes: '512x512',
-                type: 'image/svg+xml',
-                purpose: 'maskable'
+                type: 'image/png',
+                purpose: 'any maskable'
               }
             ]
           },

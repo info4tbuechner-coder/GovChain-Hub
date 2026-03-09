@@ -51,7 +51,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
   ];
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-transparent selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden pb-20 lg:pb-0">
+    <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-transparent selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden pb-[calc(5rem+var(--sab))] lg:pb-0">
       
       <CommandPalette isOpen={isCmdOpen} onClose={() => setIsCmdOpen(false)} onNavigate={onNavigate} />
 

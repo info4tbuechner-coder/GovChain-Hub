@@ -63,6 +63,7 @@ const SmartProcurement: React.FC = () => {
       deadline: new Date(newDeadline),
       budget: newBudget || 'Nicht spezifiziert',
       refNumber: `VERG-${Math.floor(Math.random() * 10000)}`,
+      contractAddress: `0x${Math.random().toString(16).slice(2, 42).padEnd(40, '0')}`,
       bids: []
     };
 

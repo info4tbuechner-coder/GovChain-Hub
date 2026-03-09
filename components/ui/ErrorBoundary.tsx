@@ -1,5 +1,5 @@
 
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ShieldAlert, RefreshCcw } from 'lucide-react';
 
 interface Props {
@@ -15,8 +15,7 @@ interface State {
  * ErrorBoundary catches JavaScript errors anywhere in their child component tree,
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
  */
-// Explicitly use React.Component to ensure state and props inheritance is correctly resolved by the TypeScript compiler.
-class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   // Initialize state directly as a class property to ensure it's correctly recognized by the instance.
   public state: State = {
     hasError: false
@@ -39,7 +38,7 @@ class ErrorBoundary extends React.Component<Props, State> {
   public render(): ReactNode {
     // Access state and props from the inherited React.Component members.
     const { hasError, error } = this.state;
-    const { children } = this.props;
+    const { children } = (this as any).props;
 
     if (hasError) {
       // Fallback UI when an error is caught

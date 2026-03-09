@@ -68,7 +68,7 @@ export interface Instrument {
 export interface AuditLog {
   id: string;
   userId: string; // Who performed the action
-  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE' | 'SIGN_DOCUMENT' | 'TRANSFER_ASSET' | 'SUBMIT_BID' | 'TRANSFER_FUNDS' | 'AI_QUERY' | 'CRISIS_TRIGGER' | 'DATA_ACCESS_REQ' | 'DATA_ACCESS_DECISION';
+  action: 'LOGIN' | 'VIEW_DOC' | 'ANCHOR_HASH' | 'VERIFY_CREDENTIAL' | 'ISSUE_CREDENTIAL' | 'CAST_VOTE' | 'SIGN_DOCUMENT' | 'TRANSFER_ASSET' | 'SUBMIT_BID' | 'TRANSFER_FUNDS' | 'AI_QUERY' | 'CRISIS_TRIGGER' | 'DATA_ACCESS_REQ' | 'DATA_ACCESS_DECISION' | 'CREATE_TENDER';
   resourceId?: string;
   metadata?: string; // JSON string of details
   timestamp: Date;
