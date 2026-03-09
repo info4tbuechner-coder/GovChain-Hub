@@ -55,23 +55,59 @@ const DocTransferDemo: React.FC = () => {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setStatus(DocStatus.UPLOADED);
-      
-      setTimeout(async () => {
-        try {
-          const computedHash = await hashFile(selectedFile);
-          setHash(computedHash);
-          addToast("SHA-256 Hash lokal berechnet", "info");
-          await performAnchoring(computedHash, selectedFile.name);
-        } catch (err) {
-          addToast("Fehler bei der Hash-Berechnung", "error");
-        }
-      }, 600);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  };
+
+  const processFile = (selectedFile: File) => {
+    setFile(selectedFile);
+    setStatus(DocStatus.UPLOADED);
+    setUploadProgress(0);
+
+    // Simulate upload progress
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 50);
+
+    setTimeout(async () => {
+      try {
+        const computedHash = await hashFile(selectedFile);
+        setHash(computedHash);
+        addToast("SHA-256 Hash lokal berechnet", "info");
+        await performAnchoring(computedHash, selectedFile.name);
+      } catch (err) {
+        addToast("Fehler bei der Hash-Berechnung", "error");
+      }
+    }, 600);
   };
 
   const downloadProof = () => {
@@ -160,26 +196,44 @@ const DocTransferDemo: React.FC = () => {
                     </div>
 
                     {!file ? (
-                        <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:bg-slate-50 transition-all cursor-pointer relative group">
+                        <div 
+                          className={`border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer relative group ${isDragging ? 'border-gov-blue bg-blue-50' : 'border-slate-300 hover:bg-slate-50'}`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                        >
                             <input type="file" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                            <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                <Upload className="h-8 w-8 text-slate-400" />
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-transform ${isDragging ? 'bg-blue-100 scale-110' : 'bg-slate-100 group-hover:scale-110'}`}>
+                                <Upload className={`h-8 w-8 ${isDragging ? 'text-gov-blue' : 'text-slate-400'}`} />
                             </div>
-                            <p className="text-lg font-bold text-slate-800">Datei auswählen</p>
+                            <p className="text-lg font-bold text-slate-800">Datei auswählen oder hierher ziehen</p>
                             <p className="text-sm text-slate-500 mt-2">Die Datei wird nur lokal im Browser gehasht (DSGVO-konform).</p>
                         </div>
                     ) : (
-                        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex items-center gap-4 animate-in fade-in zoom-in">
-                            <div className="p-3 bg-blue-50 rounded-lg text-gov-blue">
-                                <FileText className="h-8 w-8" />
+                        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col gap-4 animate-in fade-in zoom-in">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 rounded-lg text-gov-blue">
+                                    <FileText className="h-8 w-8" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-slate-900 truncate">{file.name}</p>
+                                    <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB • {new Date().toLocaleDateString()}</p>
+                                </div>
+                                {status === DocStatus.ANCHORED && (
+                                    <div className="p-2 bg-green-100 text-green-600 rounded-full">
+                                        <Check className="w-5 h-5" />
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-bold text-slate-900 truncate">{file.name}</p>
-                                <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB • {new Date().toLocaleDateString()}</p>
-                            </div>
-                            {status === DocStatus.ANCHORED && (
-                                <div className="p-2 bg-green-100 text-green-600 rounded-full">
-                                    <Check className="w-5 h-5" />
+                            {status === DocStatus.UPLOADED && uploadProgress < 100 && (
+                                <div className="w-full">
+                                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                                        <span>Lade hoch...</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div className="bg-gov-blue h-full transition-all duration-75" style={{ width: `${uploadProgress}%` }}></div>
+                                    </div>
                                 </div>
                             )}
                         </div>

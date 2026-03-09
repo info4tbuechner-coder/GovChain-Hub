@@ -20,6 +20,7 @@ import ComplianceCenter from './components/ComplianceCenter';
 import GovAiAssistant from './components/GovAiAssistant';
 import CrisisCenter from './components/CrisisCenter';
 import DataExchange from './components/DataExchange';
+import AboutPage from './components/AboutPage';
 import { ToastProvider } from './components/ui/ToastSystem';
 import { UserProvider, useUser } from './contexts/UserContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -93,6 +94,8 @@ const AppContent: React.FC = () => {
         return <InstrumentsCatalog />;
       case 'knowledge':
         return <KnowledgeBase />;
+      case 'about':
+        return <AboutPage onNavigate={navigateTo} />;
       default:
         return <LandingPage onNavigate={navigateTo} />;
     }

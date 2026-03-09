@@ -59,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
         <OfflineIndicator />
         <div className="hidden sm:flex bg-slate-950 text-slate-300 text-[10px] py-1 px-4 justify-between items-center border-b border-slate-800">
           <div className="flex items-center gap-4">
-              <span className="flex items-center opacity-80 font-medium tracking-wide"><Shield className="w-3 h-3 mr-1.5"/> OFFIZIELLER BUNDES-DEMONSTRATOR</span>
+              <span className="flex items-center opacity-80 font-medium tracking-wide"><Shield className="w-3 h-3 mr-1.5"/> BUNDESREPUBLIK DEUTSCHLAND</span>
           </div>
           <div className="flex items-center gap-2">
               <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
@@ -67,17 +67,25 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => 
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm pt-safe">
+        <div className="bg-white/95 backdrop-blur-md border-b-4 border-b-[#FFCE00] shadow-sm pt-safe relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-black via-[#DD0000] to-[#FFCE00]"></div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-14 md:h-16">
+            <div className="flex justify-between items-center h-16 md:h-20">
                 <div className="flex items-center cursor-pointer active-scale" onClick={() => onNavigate('landing')}>
-                    <div className="bg-slate-900 p-1.5 rounded-lg mr-2 shadow-lg">
-                        <Shield className="h-4 w-4 text-white" />
+                    <div className="mr-3 flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-slate-900 rounded-full shadow-md border-2 border-[#FFCE00]">
+                        <Shield className="h-5 w-5 md:h-6 md:w-6 text-white" />
                     </div>
-                    <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">GovChain<span className="text-blue-600">Hub</span></h1>
+                    <div className="flex flex-col">
+                      <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight leading-tight">GovChain<span className="text-blue-600">Hub</span></h1>
+                      <span className="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">Bundes-Demonstrator</span>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <button onClick={() => onNavigate('about')} className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-gov-blue transition-colors">
+                      <Info className="w-4 h-4" />
+                      Über das Projekt
+                    </button>
                     <button onClick={() => setIsCmdOpen(true)} className="p-2 text-slate-400 hover:text-slate-600 lg:bg-slate-50 lg:rounded-md border border-transparent lg:border-slate-200 active-scale">
                         <Search className="w-5 h-5 sm:w-4 sm:h-4" />
                     </button>

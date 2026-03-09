@@ -15,6 +15,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [credentials, setCredentials] = useState<VerifiableCredential[]>([]);
   const [tasks, setTasks] = useState<WorkflowTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [trafficData, setTrafficData] = useState<{time: string, txs: number, security: number}[]>([]);
   const { user } = useUser();
 
   const fetchData = async () => {
@@ -30,26 +31,59 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     setLoading(false);
   };
 
+  // Initialize traffic data
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const trafficData = useMemo(() => {
-    const data = [];
+    const initialData = [];
     const now = new Date();
     for (let i = 24; i >= 0; i--) {
         const hour = new Date(now.getTime() - i * 3600000);
         let val = Math.floor(Math.random() * 20) + 10;
         const h = hour.getHours();
         if (h > 8 && h < 17) val += 30;
-        data.push({
+        initialData.push({
             time: `${h}:00`,
             txs: val,
             security: Math.floor(val * 0.9)
         });
     }
-    return data;
-  }, [auditLogs]);
+    setTrafficData(initialData);
+  }, []);
+
+  // Simulate real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTrafficData(prevData => {
+        if (prevData.length === 0) return prevData;
+        
+        const newData = [...prevData];
+        // Shift the array
+        newData.shift();
+        
+        // Add new data point
+        const now = new Date();
+        let val = Math.floor(Math.random() * 20) + 10;
+        const h = now.getHours();
+        if (h > 8 && h < 17) val += 30;
+        
+        // Add some random spike occasionally
+        if (Math.random() > 0.8) val += Math.floor(Math.random() * 40);
+
+        newData.push({
+            time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}),
+            txs: val,
+            security: Math.floor(val * 0.9)
+        });
+        
+        return newData;
+      });
+    }, 3000); // Update every 3 seconds for visual effect
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const pendingTasks = tasks.filter(t => t.status === 'PENDING');
   
